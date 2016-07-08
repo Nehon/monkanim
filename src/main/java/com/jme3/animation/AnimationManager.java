@@ -33,7 +33,6 @@ package com.jme3.animation;
 
 import com.jme3.export.*;
 import com.jme3.renderer.*;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.control.*;
 import com.jme3.util.TempVars;
 import com.jme3.util.clone.*;
@@ -75,7 +74,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     private Map<String, Object> parameters = new HashMap<>();
     private Map<String, AnimationSequence> sequences = new HashMap<>();
     private Map<String, AnimationMask> masks = new HashMap<>();
-    private AnimationSequence currentSequence;
+    private AnimationSequence activeSequence;
 
     /**
      * Animation event listeners
@@ -145,8 +144,12 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     }
 
     public void setActiveSequence(String sequenceName){
-        currentSequence = sequences.get(sequenceName);
-        currentSequence.reset();
+        activeSequence = sequences.get(sequenceName);
+        activeSequence.reset();
+    }
+
+    public AnimationSequence getActiveSequence(){
+        return activeSequence;
     }
 
     /**
@@ -260,9 +263,9 @@ public final class AnimationManager extends AbstractControl implements Cloneable
             skeleton.reset(); // reset skeleton to bind pose
         }
 
-        if(currentSequence != null) {
+        if(activeSequence != null) {
             TempVars vars = TempVars.get();
-            LinkedHashMap<String, Float> animMap = currentSequence.flatten(tpf);
+            LinkedHashMap<String, Float> animMap = activeSequence.flatten(tpf);
 
             float length = 0;
             for (String key : animMap.keySet()) {
@@ -271,11 +274,11 @@ public final class AnimationManager extends AbstractControl implements Cloneable
                     length = anim.getLength();
                 }
 
-                anim.setTime(currentSequence.getTime(), animMap.get(key), this, null, vars);
+                anim.setTime(activeSequence.getTime(), animMap.get(key), this, null, vars);
             }
             vars.release();
-            if(currentSequence.getTime() >= length){
-                currentSequence.reset();
+            if(activeSequence.getTime() >= length){
+                activeSequence.reset();
             }
 
         }

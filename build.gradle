@@ -37,7 +37,7 @@ dependencies {
     compile "org.jmonkeyengine:jme3-core:$jmeVersion"
     compile "org.jmonkeyengine:jme3-desktop:$jmeVersion"
     compile "org.jmonkeyengine:jme3-lwjgl:$jmeVersion"
-    compile "com.simsilica:lemur:1.6.1"
+    compile "com.simsilica:lemur:1.8.1"
     compile "org.codehaus.groovy:groovy-all:2.4.3"
     compile "com.github.xbuf.jme3_xbuf:jme3_xbuf_loader:$jme3_xbuf_version"
     
