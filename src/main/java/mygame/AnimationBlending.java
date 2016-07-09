@@ -13,18 +13,18 @@ import jme3_ext_xbuf.XbufLoader;
  *
  * @author normenhansen
  */
-public class SimpleAnimationBlending extends SimpleApplication {
+public class AnimationBlending extends SimpleApplication {
 
 
 
 
     public static void main(String[] args) {
-        SimpleAnimationBlending app = new SimpleAnimationBlending();
+        AnimationBlending app = new AnimationBlending();
         app.start();
     }
 
-    public SimpleAnimationBlending(){
-        super(new StatsAppState(),new AudioListenerState(), new DebugKeysAppState(),new GuiAppState(), new AnimAppState());
+    public AnimationBlending(){
+        super(new StatsAppState(),new AudioListenerState(), new DebugKeysAppState(), new AnimAppState(), new GuiAppState());
     }
 
 

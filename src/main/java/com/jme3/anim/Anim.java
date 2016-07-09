@@ -1,6 +1,4 @@
-package com.jme3.animation;
-
-import com.jme3.animation.AnimationClip;
+package com.jme3.anim;
 
 import java.util.Map;
 

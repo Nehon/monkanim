@@ -1,5 +1,6 @@
 package mygame;
 
+import com.jme3.anim.*;
 import com.jme3.animation.*;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
@@ -42,12 +43,13 @@ public class AnimAppState extends BaseAppState {
         rig.addControl(manager);
         rig.addControl(skelControl);
 
-        //Creating the blending sequence between walk and run
-        AnimationSequence sequence = manager.createAnimationSequence("Move", "walk", "jog", "run");
-        //value us initialized to 0
-        sequence.setValue(0.0f);
-        //speed initialized to 1
-        sequence.setSpeed(1.0f);
+        //Creating a blending sequence between walk, jog and run
+        manager.createAnimationSequence("walk_jog_run", "walk", "jog", "run");
+
+        //Creating a blending sequence between several sequences
+        AnimationSequence seq = manager.createAnimationSequence("walk_jog", "walk", "jog");
+        seq.setValue(0.5f);
+        manager.createAnimationSequence("walk_jog_nestedRun", "walk_jog", "run");
 
         manager.setActiveSequence("walk");
     }

@@ -1,8 +1,8 @@
-package com.jme3.animation;
+package com.jme3.anim;
+
+import com.jme3.animation.Skeleton;
 
 import java.util.BitSet;
-
-import static java.awt.SystemColor.control;
 
 /**
  * Created by Nehon on 05/07/2016.

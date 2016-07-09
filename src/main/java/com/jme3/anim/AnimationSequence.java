@@ -1,4 +1,4 @@
-package com.jme3.animation;
+package com.jme3.anim;
 
 import com.jme3.math.FastMath;
 import com.jme3.util.SafeArrayList;
@@ -89,6 +89,7 @@ public class AnimationSequence implements Anim{
         int highIndex = (int)FastMath.ceil(scaledWeight);
         int lowIndex = highIndex - 1;
 
+//        System.err.println(name + "x" + globalWeight + ":" + animations.get(lowIndex) +":" + ((1 - (scaledWeight - lowIndex)) * globalWeight) + ", "+ animations.get(highIndex) +":" + ((scaledWeight - lowIndex) * globalWeight));
         animations.get(lowIndex).resolve(weightedAnimMap, (1 - (scaledWeight - lowIndex)) * globalWeight);
         animations.get(highIndex).resolve(weightedAnimMap, (scaledWeight - lowIndex) * globalWeight);
     }

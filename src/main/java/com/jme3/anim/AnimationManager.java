@@ -29,8 +29,9 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.anim;
 
+import com.jme3.animation.*;
 import com.jme3.export.*;
 import com.jme3.renderer.*;
 import com.jme3.scene.control.*;
@@ -73,7 +74,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     private Map<String, AnimationClip> animationMap = new HashMap<>();
     private Map<String, AnimationSequence> sequences = new HashMap<>();
 
-    private Map<AnimationClip, Float> weightedAnimMap = new HashMap<>();
+    private Map<AnimationClip, Float> weightedAnimMap = new LinkedHashMap<>();
 
     private Map<String, Object> parameters = new HashMap<>();
 
@@ -180,6 +181,10 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
     public Map<AnimationClip, Float> getWeightedAnimMap() {
         return weightedAnimMap;
+    }
+
+    public Map<String, AnimationSequence> getSequences() {
+        return sequences;
     }
 
     /**
@@ -294,20 +299,21 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
 
         if(activeSequence != null) {
-            TempVars vars = TempVars.get();
-            activeSequence.update(tpf);
 
+            activeSequence.update(tpf);
             weightedAnimMap.clear();
             activeSequence.resolve(weightedAnimMap, 1);
 
             float length = 0;
+
+            TempVars vars = TempVars.get();
             for (Entry<AnimationClip, Float> animEntry : weightedAnimMap.entrySet()) {
 
                 AnimationClip anim = animEntry.getKey();
                 if(anim.getLength() > length){
                     length = anim.getLength();
                 }
-
+                //System.err.println(anim.getName()+ ": " + animEntry.getValue());
                 anim.setTime(activeSequence.getTime(), animEntry.getValue(), this, null, vars);
             }
             vars.release();

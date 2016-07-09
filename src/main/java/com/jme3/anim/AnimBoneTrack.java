@@ -29,16 +29,14 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.animation;
+package com.jme3.anim;
 
+import com.jme3.animation.*;
 import com.jme3.export.*;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.util.TempVars;
 import java.io.IOException;
-import java.util.BitSet;
-
-import static java.awt.SystemColor.control;
 
 /**
  * Contains a list of transforms and times for each keyframe.
@@ -247,7 +245,7 @@ public final class AnimBoneTrack implements AnimTrack {
         }
 
 //        if (weight != 1f) {
-            target.blendAnimTransforms(tempV, tempQ, scales != null ? tempS : null, weight);
+            target.blendAnim(tempV, tempQ, scales != null ? tempS : null, weight);
 //        } else {
 //            target.setAnimTransforms(tempV, tempQ, scales != null ? tempS : null);
 //        }

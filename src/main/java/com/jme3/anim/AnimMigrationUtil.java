@@ -1,4 +1,6 @@
-package com.jme3.animation;
+package com.jme3.anim;
+
+import com.jme3.animation.*;
 
 /**
  * Created by Nehon on 03/07/2016.

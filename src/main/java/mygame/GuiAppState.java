@@ -1,6 +1,6 @@
 package mygame;
 
-import com.jme3.animation.AnimationClip;
+import com.jme3.anim.*;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
@@ -16,7 +16,7 @@ public class GuiAppState extends BaseAppState {
 
     Label speedLabel;
     Label animLabel;
-    VersionedReference<Double> speedRef ;
+    VersionedReference<Double> speedRef;
 
 
     @Override
@@ -25,8 +25,8 @@ public class GuiAppState extends BaseAppState {
 
         // Create a simple container for our elements
         Container myWindow = new Container();
-        ((SimpleApplication)app).getGuiNode().attachChild(myWindow);
-        myWindow.setPreferredSize(new Vector3f(200,70,1));
+        ((SimpleApplication) app).getGuiNode().attachChild(myWindow);
+        myWindow.setPreferredSize(new Vector3f(200, 70, 1));
 
         // Put it somewhere that we will see it.
         // Note: Lemur GUI elements grow down from the upper left corner.
@@ -37,27 +37,21 @@ public class GuiAppState extends BaseAppState {
         animLabel = new Label("walk");
         myWindow.addChild(animLabel);
         myWindow.addChild(speedLabel);
-        Slider slider = new Slider(new DefaultRangedValueModel(1,3,1),Axis.X);
+        Slider slider = new Slider(new DefaultRangedValueModel(1, 3, 1), Axis.X);
         slider.setDelta(0.03f);
         myWindow.addChild(slider);
         speedRef = slider.getModel().createReference();
 
 
         Container buttonContainer = new Container();
-        ((SimpleApplication)app).getGuiNode().attachChild(buttonContainer);
+        ((SimpleApplication) app).getGuiNode().attachChild(buttonContainer);
         buttonContainer.setLocalTranslation(300, 500, 0);
 
-        Button button = buttonContainer.addChild(new Button("Walk"));
-        button.addClickCommands(( Button source ) -> setAnim("walk"));
-
-        button = buttonContainer.addChild(new Button("Jog"));
-        button.addClickCommands(( Button source ) -> setAnim("jog"));
-
-        button = buttonContainer.addChild(new Button("Run"));
-        button.addClickCommands(( Button source ) -> setAnim("run"));
-
-        button = buttonContainer.addChild(new Button("Mix all"));
-        button.addClickCommands(( Button source ) -> setAnim("Move"));
+        AnimAppState animState = getState(AnimAppState.class);
+        for (Map.Entry<String, AnimationSequence> seqEntry : animState.getManager().getSequences().entrySet()) {
+            Button button = buttonContainer.addChild(new Button(seqEntry.getKey()));
+            button.addClickCommands((Button source) -> setAnim(seqEntry.getKey()));
+        }
 
     }
 
@@ -74,8 +68,8 @@ public class GuiAppState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
-        if(speedRef.needsUpdate()){
-            speedLabel.setText("Speed: " + String.format("%.2f",speedRef.get()));
+        if (speedRef.needsUpdate()) {
+            speedLabel.setText("Speed: " + String.format("%.2f", speedRef.get()));
             AnimAppState animState = getState(AnimAppState.class);
             animState.getManager().getActiveSequence().setSpeed(speedRef.get().floatValue());
             animState.getManager().getActiveSequence().setValue((speedRef.get().floatValue() - 1) / 2f);
@@ -86,16 +80,13 @@ public class GuiAppState extends BaseAppState {
     }
 
     private void setAnimLabel(AnimAppState animState, String anim) {
-        if(anim.equals("Move")){
-            Map<AnimationClip, Float> map = animState.getManager().getWeightedAnimMap();
-            StringBuilder builder = new StringBuilder();
-            for (AnimationClip key : map.keySet()) {
-                builder.append(key.getName()).append(": ").append( String.format("%.0f", map.get(key) * 100f)).append("%, ");
-            }
-            animLabel.setText(builder.toString());
-        } else {
-            animLabel.setText(anim + ": 100%");
+        animState.getManager().update(0);
+        Map<AnimationClip, Float> map = animState.getManager().getWeightedAnimMap();
+        StringBuilder builder = new StringBuilder();
+        for (AnimationClip key : map.keySet()) {
+            builder.append(key.getName()).append(": ").append(String.format("%.0f", map.get(key) * 100f)).append("%, ");
         }
+        animLabel.setText(builder.toString());
     }
 
 
