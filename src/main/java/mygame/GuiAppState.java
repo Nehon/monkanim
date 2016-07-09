@@ -6,7 +6,7 @@ import com.jme3.math.Vector3f;
 import com.simsilica.lemur.*;
 import com.simsilica.lemur.core.*;
 
-import java.util.LinkedHashMap;
+import java.util.*;
 
 /**
  * Created by Nehon on 08/07/2016.
@@ -44,37 +44,18 @@ public class GuiAppState extends BaseAppState {
         Container buttonContainer = new Container();
         ((SimpleApplication)app).getGuiNode().attachChild(buttonContainer);
         buttonContainer.setLocalTranslation(300, 500, 0);
+
         Button button = buttonContainer.addChild(new Button("Walk"));
-        button.addClickCommands(new Command<Button>() {
-            @Override
-            public void execute( Button source ) {
-                setAnim("walk");
-            }
-        });
+        button.addClickCommands(( Button source ) -> setAnim("walk"));
+
         button = buttonContainer.addChild(new Button("Jog"));
-        button.addClickCommands(new Command<Button>() {
-            @Override
-            public void execute( Button source ) {
-                setAnim("jog");
-            }
-        });
+        button.addClickCommands(( Button source ) -> setAnim("jog"));
 
         button = buttonContainer.addChild(new Button("Run"));
-        button.addClickCommands(new Command<Button>() {
-            @Override
-            public void execute( Button source ) {
-                setAnim("run");
-            }
-        });
-
+        button.addClickCommands(( Button source ) -> setAnim("run"));
 
         button = buttonContainer.addChild(new Button("Mix all"));
-        button.addClickCommands(new Command<Button>() {
-            @Override
-            public void execute( Button source ) {
-                setAnim("Move");
-            }
-        });
+        button.addClickCommands(( Button source ) -> setAnim("Move"));
 
     }
 
@@ -104,7 +85,7 @@ public class GuiAppState extends BaseAppState {
 
     private void setAnimLabel(AnimAppState animState, String anim) {
         if(anim.equals("Move")){
-            LinkedHashMap<String, Float> map = animState.getManager().getActiveSequence().flatten(0);
+            Map<String, Float> map = animState.getManager().getActiveSequence().flatten(0);
             StringBuilder builder = new StringBuilder();
             for (String key : map.keySet()) {
                 builder.append(key).append(": ").append( String.format("%.0f", map.get(key) * 100f)).append("%, ");

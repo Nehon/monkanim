@@ -15,7 +15,7 @@ public class AnimationSequence {
 
     private String name;
     private float value = 0;
-    private LinkedHashMap<String, Float> flatMap;
+    private Map<String, Float> flatMap;
     private float time;
     private float speed = 1;
 
@@ -41,10 +41,10 @@ public class AnimationSequence {
         }
     }
 
-    public LinkedHashMap<String, Float> flatten(float tpf){
+    public Map<String, Float> flatten(float tpf){
         time += tpf * speed;
         if(flatMap == null){
-            flatMap = new LinkedHashMap<>();
+            flatMap = new HashMap<>();
         }
         flatMap.clear();
         if(animations.size() == 1 || value == 0){

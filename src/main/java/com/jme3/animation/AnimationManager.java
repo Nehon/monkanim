@@ -265,7 +265,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
         if(activeSequence != null) {
             TempVars vars = TempVars.get();
-            LinkedHashMap<String, Float> animMap = activeSequence.flatten(tpf);
+            Map<String, Float> animMap = activeSequence.flatten(tpf);
 
             float length = 0;
             for (String key : animMap.keySet()) {
