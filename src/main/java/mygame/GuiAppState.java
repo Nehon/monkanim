@@ -6,6 +6,8 @@ import com.jme3.math.Vector3f;
 import com.simsilica.lemur.*;
 import com.simsilica.lemur.core.*;
 
+import java.util.LinkedHashMap;
+
 /**
  * Created by Nehon on 08/07/2016.
  */
@@ -42,22 +44,32 @@ public class GuiAppState extends BaseAppState {
         Container buttonContainer = new Container();
         ((SimpleApplication)app).getGuiNode().attachChild(buttonContainer);
         buttonContainer.setLocalTranslation(300, 500, 0);
-        Button walkButton = buttonContainer.addChild(new Button("Walk"));
-        walkButton.addClickCommands(new Command<Button>() {
+        Button button = buttonContainer.addChild(new Button("Walk"));
+        button.addClickCommands(new Command<Button>() {
             @Override
             public void execute( Button source ) {
                 setAnim("walk");
             }
         });
-        walkButton = buttonContainer.addChild(new Button("Run"));
-        walkButton.addClickCommands(new Command<Button>() {
+        button = buttonContainer.addChild(new Button("Jog"));
+        button.addClickCommands(new Command<Button>() {
+            @Override
+            public void execute( Button source ) {
+                setAnim("jog");
+            }
+        });
+
+        button = buttonContainer.addChild(new Button("Run"));
+        button.addClickCommands(new Command<Button>() {
             @Override
             public void execute( Button source ) {
                 setAnim("run");
             }
         });
-        walkButton = buttonContainer.addChild(new Button("Both"));
-        walkButton.addClickCommands(new Command<Button>() {
+
+
+        button = buttonContainer.addChild(new Button("Mix all"));
+        button.addClickCommands(new Command<Button>() {
             @Override
             public void execute( Button source ) {
                 setAnim("Move");
@@ -91,9 +103,13 @@ public class GuiAppState extends BaseAppState {
     }
 
     private void setAnimLabel(AnimAppState animState, String anim) {
-        float value = animState.getManager().getActiveSequence().getValue();
         if(anim.equals("Move")){
-            animLabel.setText("walk: " + String.format("%.0f", (1 - value) * 100f) + "%, run: " + String.format("%.0f", value * 100f) + "%" );
+            LinkedHashMap<String, Float> map = animState.getManager().getActiveSequence().flatten(0);
+            StringBuilder builder = new StringBuilder();
+            for (String key : map.keySet()) {
+                builder.append(key).append(": ").append( String.format("%.0f", map.get(key) * 100f)).append("%, ");
+            }
+            animLabel.setText(builder.toString());
         } else {
             animLabel.setText(anim + ": 100%");
         }

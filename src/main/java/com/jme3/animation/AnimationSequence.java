@@ -46,6 +46,7 @@ public class AnimationSequence {
         if(flatMap == null){
             flatMap = new LinkedHashMap<>();
         }
+        flatMap.clear();
         if(animations.size() == 1 || value == 0){
             flatMap.put(animations.get(0), 1f);
             return flatMap;
@@ -58,6 +59,7 @@ public class AnimationSequence {
         float scaledWeight = value * (animations.size() - 1);
         int highIndex = (int)FastMath.ceil(scaledWeight);
         int lowIndex = highIndex - 1;
+
         flatMap.put(animations.get(lowIndex), 1 - (scaledWeight - lowIndex));
         flatMap.put(animations.get(highIndex), scaledWeight - lowIndex);
 
