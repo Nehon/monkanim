@@ -31,7 +31,7 @@
  */
 package com.jme3.anim;
 
-import com.jme3.animation.ClonableTrack;
+import com.jme3.animation.*;
 import com.jme3.export.*;
 import com.jme3.scene.Spatial;
 import com.jme3.util.*;
@@ -123,13 +123,13 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
      * @param control     the animation control
      * @param channel     the animation channel
      */
-    void setTime(float time, float blendAmount, AnimationManager manager, AnimationMask mask, TempVars vars) {
+    void setTime(float time, float blendAmount, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
         if (tracks == null) {
             return;
         }
 
         for (AnimTrack track : tracks) {
-            track.setTime(time, blendAmount, manager, mask, vars);
+            track.setTime(time, blendAmount, metaData, mask, vars);
         }
     }
 

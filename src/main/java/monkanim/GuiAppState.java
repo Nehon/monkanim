@@ -1,4 +1,4 @@
-package mygame;
+package monkanim;
 
 import com.jme3.anim.*;
 import com.jme3.app.*;

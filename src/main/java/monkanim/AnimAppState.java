@@ -1,4 +1,4 @@
-package mygame;
+package monkanim;
 
 import com.jme3.anim.*;
 import com.jme3.animation.*;
@@ -20,9 +20,6 @@ public class AnimAppState extends BaseAppState {
         Node rootNode = ((SimpleApplication)app).getRootNode();
         rootNode.attachChild(s.getChild("rig"));
         rootNode.addLight(new DirectionalLight(new Vector3f(-1,-1,-1).normalizeLocal()));
-
-        app.getCamera().setLocation(new Vector3f(4.1520014f, 1.6250974f, 1.3038764f));
-        app.getCamera().setRotation(new Quaternion(0.04338501f, -0.8087327f, 0.060133625f, 0.58348364f));
 
         dumpSceneGraph(rootNode, "");
 

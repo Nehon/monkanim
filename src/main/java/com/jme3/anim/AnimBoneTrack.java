@@ -183,18 +183,18 @@ public final class AnimBoneTrack implements AnimTrack {
      *
      * @param time the current time of the animation
      * @param weight the weight of the animation
-     * @param manager
+     * @param metaData
      * @param mask
      * @param vars
      */
-    public void setTime(float time, float weight, AnimationManager manager, AnimationMask mask, TempVars vars) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
         if(mask != null) {
             if (!mask.isAffected(targetBoneIndex)) {
                 return;
             }
         }
         
-        Bone target = manager.getSkeleton().getBone(targetBoneIndex);
+        Bone target = metaData.getSkeleton().getBone(targetBoneIndex);
 
         Vector3f tempV = vars.vect1;
         Vector3f tempS = vars.vect2;

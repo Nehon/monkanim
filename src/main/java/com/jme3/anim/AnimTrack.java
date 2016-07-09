@@ -31,6 +31,7 @@
  */
 package com.jme3.anim;
 
+import com.jme3.animation.AnimationMetaData;
 import com.jme3.export.Savable;
 import com.jme3.util.TempVars;
 
@@ -45,10 +46,10 @@ public interface AnimTrack extends Savable, Cloneable {
      * 
      * @param time The time in the animation
      * @param weight The weight from 0 to 1 on how much to apply the track 
-     * @param control The control which the track should effect
-     * @param channel The channel which the track should effect
+     * @param metaData The animation meta data
+     * @param mask the subset of element the track should affect
      */
-    public void setTime(float time, float weight, AnimationManager manager, AnimationMask mask, TempVars vars);
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars);
 
     /**
      * @return the length of the track

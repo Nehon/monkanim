@@ -42,6 +42,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static xbuf_ext.AnimationsKf.AnimationKF.TargetKind.skeleton;
+
 /**
  * <code>AnimControl</code> is a Spatial control that allows manipulation
  * of skeletal animation.
@@ -67,7 +69,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     /**
      * Skeleton object must contain corresponding data for the targets' weight buffers.
      */
-    private Skeleton skeleton;
+    private AnimationMetaData metaData = new AnimationMetaData();
+
     /**
      * List of animations
      */
@@ -94,7 +97,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @param skeleton The skeleton to animate
      */
     public AnimationManager(Skeleton skeleton) {
-        this.skeleton = skeleton;
+        this.metaData.setSkeleton(skeleton);
         reset();
     }
 
@@ -119,7 +122,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     public void cloneFields(Cloner cloner, Object original ) {
         super.cloneFields(cloner, original);
 
-        this.skeleton = cloner.clone(skeleton);
+        this.metaData.setSkeleton(cloner.clone(((AnimationManager)original).getSkeleton()));
 
         for (Entry<String, Object> paramEntry : parameters.entrySet()) {
             this.parameters.put(paramEntry.getKey(),paramEntry.getValue());
@@ -228,11 +231,15 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         animationMap.remove(anim.getName());
     }
 
+    public AnimationMetaData getMetaData() {
+        return metaData;
+    }
+
     /**
      * @return The skeleton of this <code>AnimControl</code>.
      */
     public Skeleton getSkeleton() {
-        return skeleton;
+        return metaData.getSkeleton();
     }
 
     /**
@@ -261,8 +268,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     }
 
     final void reset() {
-        if (skeleton != null) {
-            skeleton.resetAndUpdate();
+        if (metaData.getSkeleton() != null) {
+            metaData.getSkeleton().resetAndUpdate();
         }
     }
 
@@ -294,8 +301,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      */
     @Override
     protected void controlUpdate(float tpf) {
-        if (skeleton != null) {
-            skeleton.reset(); // reset skeleton to bind pose
+        if (metaData.getSkeleton() != null) {
+            metaData.getSkeleton().reset(); // reset skeleton to bind pose
         }
 
         if(activeSequence != null) {
@@ -314,7 +321,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
                     length = anim.getLength();
                 }
                 //System.err.println(anim.getName()+ ": " + animEntry.getValue());
-                anim.setTime(activeSequence.getTime(), animEntry.getValue(), this, null, vars);
+                anim.setTime(activeSequence.getTime(), animEntry.getValue(), metaData, null, vars);
             }
             vars.release();
             if(activeSequence.getTime() >= activeSequence.getLength()){
@@ -323,8 +330,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
         }
 
-        if (skeleton != null) {
-            skeleton.updateWorldVectors();
+        if (metaData.getSkeleton() != null) {
+            metaData.getSkeleton().updateWorldVectors();
         }
     }
 
@@ -339,7 +346,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
-        oc.write(skeleton, "skeleton", null);
+        oc.write(metaData.getSkeleton(), "skeleton", null);
         oc.writeStringSavableMap(animationMap, "animations", null);
     }
 
@@ -347,7 +354,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     public void read(JmeImporter im) throws IOException {
         super.read(im);
         InputCapsule in = im.getCapsule(this);
-        skeleton = (Skeleton) in.readSavable("skeleton", null);
+        metaData.setSkeleton((Skeleton) in.readSavable("skeleton", null));
         HashMap<String, AnimationClip> loadedAnimationMap = (HashMap<String, AnimationClip>) in.readStringSavableMap("animations", null);
         if (loadedAnimationMap != null) {
             animationMap = loadedAnimationMap;

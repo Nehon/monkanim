@@ -3,7 +3,7 @@ apply plugin: 'application'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
-mainClassName='mygame.SimpleAnimationBlending'
+mainClassName='monkanim.SimpleAnimationBlending'
 
 repositories {
     jcenter {
@@ -49,7 +49,7 @@ task wrapper(type: Wrapper) {
 
 task createDirs << {
     
-    def pkg = 'mygame'
+    def pkg = 'monkanim'
     def dirs = [
         file("./src/main/java/$pkg"),
         file("./src/main/resources"),
