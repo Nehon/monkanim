@@ -24,8 +24,7 @@ public class AnimMigrationUtil {
             Animation anim = control.getAnim(name);
             manager.addAnimationClip(fromAnimation(anim));
 
-            AnimationSequence sequence = new AnimationSequence(name, name);
-            manager.addAnimationSequence(sequence);
+            AnimationSequence sequence = manager.createAnimationSequence(name, name);
         }
 
         return manager;

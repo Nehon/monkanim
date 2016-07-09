@@ -11,59 +11,86 @@ import java.util.*;
  * It can go from one to n animations blended together.
  * on each frame the tree is flatten and weights are computed accordingly
  */
-public class AnimationSequence {
+public class AnimationSequence implements Anim{
 
     private String name;
     private float value = 0;
-    private Map<String, Float> flatMap;
     private float time;
     private float speed = 1;
+    private float length = 0;
+
+    private List<Anim> animations = new SafeArrayList<>(Anim.class);
 
 
-    private List<String> animations = new SafeArrayList<>(String.class);
+    /**
+     * Serialisation only
+     */
+    public AnimationSequence(){
+    }
 
-    public AnimationSequence(String name) {
+    AnimationSequence(String name) {
         this.name = name;
     }
 
-    public AnimationSequence(String name, String... animationNames) {
+
+    AnimationSequence(String name, Anim... animations) {
         this.name = name;
-        addAnimations(animationNames);
+        addAnimations(animations);
     }
 
-    public void addAnimation(String animationName){
-        animations.add(animationName);
-    }
-
-    public void addAnimations(String... animationNames){
-        for (String animationName : animationNames) {
-            addAnimation(animationName);
+    public void addAnimation(Anim animation){
+        animations.add(animation);
+        if (animation.getLength() > length){
+            length = animation.getLength();
         }
     }
 
-    public Map<String, Float> flatten(float tpf){
+    public void addAnimations(Anim... animations){
+        for (Anim animation : animations) {
+            addAnimation(animation);
+        }
+    }
+
+    public void removeAnimation(Anim animation){
+        animations.remove(animation);
+        //recompute length
+        length = 0;
+        for (Anim anim : animations) {
+            if (anim.getLength() > length){
+                length = anim.getLength();
+            }
+        }
+    }
+
+    @Override
+    public float getLength() {
+        return length;
+    }
+
+    void update(float tpf){
         time += tpf * speed;
-        if(flatMap == null){
-            flatMap = new HashMap<>();
+    }
+
+    @Override
+    public void resolve(Map<AnimationClip, Float> weightedAnimMap, float globalWeight){
+        if(animations.isEmpty()){
+            return;
         }
-        flatMap.clear();
         if(animations.size() == 1 || value == 0){
-            flatMap.put(animations.get(0), 1f);
-            return flatMap;
+            animations.get(0).resolve(weightedAnimMap, globalWeight);
+            return;
         }
         if(value == 1){
-            flatMap.put(animations.get(animations.size() - 1), 1f);
-            return flatMap;
+            animations.get(animations.size() - 1).resolve(weightedAnimMap, globalWeight);
+            return;
         }
 
         float scaledWeight = value * (animations.size() - 1);
         int highIndex = (int)FastMath.ceil(scaledWeight);
         int lowIndex = highIndex - 1;
 
-        flatMap.put(animations.get(lowIndex), 1 - (scaledWeight - lowIndex));
-        flatMap.put(animations.get(highIndex), scaledWeight - lowIndex);
-
-        return flatMap;
+        animations.get(lowIndex).resolve(weightedAnimMap, (1 - (scaledWeight - lowIndex)) * globalWeight);
+        animations.get(highIndex).resolve(weightedAnimMap, (scaledWeight - lowIndex) * globalWeight);
     }
 
     public void setValue(float value) {

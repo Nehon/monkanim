@@ -43,13 +43,11 @@ public class AnimAppState extends BaseAppState {
         rig.addControl(skelControl);
 
         //Creating the blending sequence between walk and run
-        AnimationSequence sequence = new AnimationSequence("Move", "walk", "jog", "run");
+        AnimationSequence sequence = manager.createAnimationSequence("Move", "walk", "jog", "run");
         //value us initialized to 0
         sequence.setValue(0.0f);
         //speed initialized to 1
         sequence.setSpeed(1.0f);
-        manager.addAnimationSequence(sequence);
-
 
         manager.setActiveSequence("walk");
     }

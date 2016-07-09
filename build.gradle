@@ -3,7 +3,7 @@ apply plugin: 'application'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
-mainClassName='mygame.Main'
+mainClassName='mygame.SimpleAnimationBlending'
 
 repositories {
     jcenter {

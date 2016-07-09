@@ -37,13 +37,14 @@ import com.jme3.util.*;
 import com.jme3.util.clone.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * The animation class updates the animation target with the tracks of a given type.
  *
  * @author Kirill Vainer, Marcin Roguski (Kaelthas)
  */
-public class AnimationClip implements Savable, Cloneable, JmeCloneable {
+public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
 
     /**
      * The name of the animation.
@@ -94,8 +95,17 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable {
      *
      * @return the length in seconds of this animation
      */
+    @Override
     public float getLength() {
         return length;
+    }
+
+    @Override
+    public void resolve(Map<AnimationClip, Float> weightedAnimMap, float globalWeight) {
+        if(globalWeight == 0){
+            return;
+        }
+        weightedAnimMap.put(this, globalWeight);
     }
 
     public int getNbFrames() {

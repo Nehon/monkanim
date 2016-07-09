@@ -71,8 +71,12 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * List of animations
      */
     private Map<String, AnimationClip> animationMap = new HashMap<>();
-    private Map<String, Object> parameters = new HashMap<>();
     private Map<String, AnimationSequence> sequences = new HashMap<>();
+
+    private Map<AnimationClip, Float> weightedAnimMap = new HashMap<>();
+
+    private Map<String, Object> parameters = new HashMap<>();
+
     private Map<String, AnimationMask> masks = new HashMap<>();
     private AnimationSequence activeSequence;
 
@@ -139,8 +143,30 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         this.animationMap = newMap;
     }
 
-    public void addAnimationSequence(AnimationSequence sequence){
+    public AnimationSequence createAnimationSequence(String name){
+        return createAnimationSequence(name, null);
+    }
+
+    public AnimationSequence createAnimationSequence(String name, String... animNames){
+        AnimationSequence sequence = new AnimationSequence(name);
+        if(animNames != null) {
+            for (String animName : animNames) {
+                Anim clip = animationMap.get(animName);
+
+                if (clip == null) {
+                    //we couldn't find a clip with this name, let's look for a sequence
+                    clip = sequences.get(animName);
+                }
+                if (clip == null) {
+                    //we couldn't find a sequence either, let's throw an exception
+                    throw new IllegalArgumentException("Can't find an animation clip or sequence with name " + animName);
+                }
+                sequence.addAnimation(clip);
+            }
+        }
+
         sequences.put(sequence.getName(), sequence);
+        return sequence;
     }
 
     public void setActiveSequence(String sequenceName){
@@ -150,6 +176,10 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
     public AnimationSequence getActiveSequence(){
         return activeSequence;
+    }
+
+    public Map<AnimationClip, Float> getWeightedAnimMap() {
+        return weightedAnimMap;
     }
 
     /**
@@ -265,19 +295,23 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
         if(activeSequence != null) {
             TempVars vars = TempVars.get();
-            Map<String, Float> animMap = activeSequence.flatten(tpf);
+            activeSequence.update(tpf);
+
+            weightedAnimMap.clear();
+            activeSequence.resolve(weightedAnimMap, 1);
 
             float length = 0;
-            for (String key : animMap.keySet()) {
-                AnimationClip anim = animationMap.get(key);
+            for (Entry<AnimationClip, Float> animEntry : weightedAnimMap.entrySet()) {
+
+                AnimationClip anim = animEntry.getKey();
                 if(anim.getLength() > length){
                     length = anim.getLength();
                 }
 
-                anim.setTime(activeSequence.getTime(), animMap.get(key), this, null, vars);
+                anim.setTime(activeSequence.getTime(), animEntry.getValue(), this, null, vars);
             }
             vars.release();
-            if(activeSequence.getTime() >= length){
+            if(activeSequence.getTime() >= activeSequence.getLength()){
                 activeSequence.reset();
             }
 

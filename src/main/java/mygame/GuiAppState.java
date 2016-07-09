@@ -1,5 +1,6 @@
 package mygame;
 
+import com.jme3.animation.AnimationClip;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
@@ -16,6 +17,7 @@ public class GuiAppState extends BaseAppState {
     Label speedLabel;
     Label animLabel;
     VersionedReference<Double> speedRef ;
+
 
     @Override
     protected void initialize(Application app) {
@@ -85,10 +87,10 @@ public class GuiAppState extends BaseAppState {
 
     private void setAnimLabel(AnimAppState animState, String anim) {
         if(anim.equals("Move")){
-            Map<String, Float> map = animState.getManager().getActiveSequence().flatten(0);
+            Map<AnimationClip, Float> map = animState.getManager().getWeightedAnimMap();
             StringBuilder builder = new StringBuilder();
-            for (String key : map.keySet()) {
-                builder.append(key).append(": ").append( String.format("%.0f", map.get(key) * 100f)).append("%, ");
+            for (AnimationClip key : map.keySet()) {
+                builder.append(key.getName()).append(": ").append( String.format("%.0f", map.get(key) * 100f)).append("%, ");
             }
             animLabel.setText(builder.toString());
         } else {
