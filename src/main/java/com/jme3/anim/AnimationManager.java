@@ -73,10 +73,10 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     /**
      * List of animations
      */
-    private Map<String, AnimationClip> animationMap = new HashMap<>();
+    private Map<String, Animation> animationMap = new HashMap<>();
     private Map<String, AnimationSequence> sequences = new HashMap<>();
 
-    private Map<AnimationClip, Float> weightedAnimMap = new LinkedHashMap<>();
+    private Map<Animation, Float> weightedAnimMap = new LinkedHashMap<>();
 
     private Map<String, Object> parameters = new HashMap<>();
 
@@ -136,10 +136,10 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
 
         // Note cloneForSpatial() never actually cloned the animation map... just its reference
-        HashMap<String, AnimationClip> newMap = new HashMap<>();
+        HashMap<String, Animation> newMap = new HashMap<>();
 
         // animationMap is cloned, but only ClonableTracks will be cloned as they need a reference to a cloned spatial
-        for( Entry<String, AnimationClip> e : animationMap.entrySet() ) {
+        for( Entry<String, Animation> e : animationMap.entrySet() ) {
             newMap.put(e.getKey(), cloner.clone(e.getValue()));
         }
 
@@ -187,7 +187,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         return activeSequence;
     }
 
-    public Map<AnimationClip, Float> getWeightedAnimMap() {
+    public Map<Animation, Float> getWeightedAnimMap() {
         return weightedAnimMap;
     }
 
@@ -200,7 +200,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * will be capable of playing. The animations should be compatible
      * with the skeleton given in the constructor.
      */
-    public void setAnimationsClips(HashMap<String, AnimationClip> animations) {
+    public void setAnimationsClips(HashMap<String, Animation> animations) {
         animationMap = animations;
     }
 
@@ -210,7 +210,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @return The animation corresponding to the given name, or null, if no
      * such named animation exists.
      */
-    public AnimationClip getAnimationClip(String name) {
+    public Animation getAnimation(String name) {
         return animationMap.get(name);
     }
 
@@ -219,7 +219,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * <code>AnimManager</code>.
      * @param anim The animation to add.
      */
-    public void addAnimationClip(AnimationClip anim) {
+    public void addAnimation(Animation anim) {
         animationMap.put(anim.getName(), anim);
     }
 
@@ -227,7 +227,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * Remove an animation so that it is no longer available for playing.
      * @param anim The animation to remove.
      */
-    public void removeAnimationClip(AnimationClip anim) {
+    public void removeAnimation(Animation anim) {
         if (!animationMap.containsKey(anim.getName())) {
             throw new IllegalArgumentException("Given animation does not exist "
                     + "in this AnimControl");
@@ -275,7 +275,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @return The names of all animations that this <code>AnimControl</code>
      * can play.
      */
-    public Collection<String> getAnimationClipNames() {
+    public Collection<String> getAnimationNames() {
         return animationMap.keySet();
     }
 
@@ -284,8 +284,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @param name The name of the animation
      * @return The length of time, in seconds, of the named animation.
      */
-    public float getAnimationClipLength(String name) {
-        AnimationClip a = animationMap.get(name);
+    public float getAnimationLength(String name) {
+        Animation a = animationMap.get(name);
         if (a == null) {
             throw new IllegalArgumentException("The animation " + name
                     + " does not exist in this AnimControl");
@@ -312,9 +312,9 @@ public final class AnimationManager extends AbstractControl implements Cloneable
             float length = 0;
 
             TempVars vars = TempVars.get();
-            for (Entry<AnimationClip, Float> animEntry : weightedAnimMap.entrySet()) {
+            for (Entry<Animation, Float> animEntry : weightedAnimMap.entrySet()) {
 
-                AnimationClip anim = animEntry.getKey();
+                Animation anim = animEntry.getKey();
                 if(anim.getLength() > length){
                     length = anim.getLength();
                 }
@@ -353,7 +353,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         super.read(im);
         InputCapsule in = im.getCapsule(this);
         metaData.setSkeleton((Skeleton) in.readSavable("skeleton", null));
-        HashMap<String, AnimationClip> loadedAnimationMap = (HashMap<String, AnimationClip>) in.readStringSavableMap("animations", null);
+        HashMap<String, Animation> loadedAnimationMap = (HashMap<String, Animation>) in.readStringSavableMap("animations", null);
         if (loadedAnimationMap != null) {
             animationMap = loadedAnimationMap;
         }

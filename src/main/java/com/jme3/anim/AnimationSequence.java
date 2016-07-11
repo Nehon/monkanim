@@ -1,5 +1,6 @@
 package com.jme3.anim;
 
+import com.jme3.animation.*;
 import com.jme3.math.FastMath;
 import com.jme3.util.SafeArrayList;
 
@@ -11,7 +12,7 @@ import java.util.*;
  * It can go from one to n animations blended together.
  * on each frame the tree is flatten and weights are computed accordingly
  */
-public class AnimationSequence implements Anim{
+public class AnimationSequence implements Anim {
 
     private String name;
     private float value = 0;
@@ -72,7 +73,7 @@ public class AnimationSequence implements Anim{
     }
 
     @Override
-    public void resolve(Map<AnimationClip, Float> weightedAnimMap, float globalWeight){
+    public void resolve(Map<Animation, Float> weightedAnimMap, float globalWeight){
         if(animations.isEmpty()){
             return;
         }

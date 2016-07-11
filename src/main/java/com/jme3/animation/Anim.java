@@ -1,4 +1,4 @@
-package com.jme3.anim;
+package com.jme3.animation;
 
 import java.util.Map;
 
@@ -8,6 +8,6 @@ import java.util.Map;
 public interface Anim {
 
     float getLength();
-    void resolve(Map<AnimationClip, Float> weightedAnimMap, float globalWeight);
+    void resolve(Map<Animation, Float> weightedAnimMap, float globalWeight);
 
 }

@@ -37,24 +37,25 @@ import com.jme3.util.*;
 import com.jme3.util.clone.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * The animation class updates the animation target with the tracks of a given type.
- * 
+ *
  * @author Kirill Vainer, Marcin Roguski (Kaelthas)
  */
-public class Animation implements Savable, Cloneable, JmeCloneable {
+public class Animation implements Savable, Cloneable, JmeCloneable, Anim {
 
-    /** 
-     * The name of the animation. 
+    /**
+     * The name of the animation.
      */
     private String name;
-    /** 
-     * The length of the animation. 
+    /**
+     * The length of the animation.
      */
     private float length;
-    /** 
-     * The tracks of the animation. 
+    /**
+     * The tracks of the animation.
      */
     private SafeArrayList<Track> tracks = new SafeArrayList<Track>(Track.class);
 
@@ -66,7 +67,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
 
     /**
      * Creates a new <code>Animation</code> with the given name and length.
-     * 
+     *
      * @param name The name of the animation.
      * @param length Length in seconds of the animation.
      */
@@ -85,24 +86,32 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
 
     /**
      * Returns the length in seconds of this animation
-     * 
+     *
      * @return the length in seconds of this animation
      */
     public float getLength() {
         return length;
     }
 
+    @Override
+    public void resolve(Map<Animation, Float> weightedAnimMap, float globalWeight) {
+        if(globalWeight == 0){
+            return;
+        }
+        weightedAnimMap.put(this, globalWeight);
+    }
+
     /**
      * This method sets the current time of the animation.
      * This method behaves differently for every known track type.
      * Override this method if you have your own type of track.
-     * 
+     *
      * @param time the time of the animation
      * @param blendAmount the blend amount factor
      * @param metaData The animation meta data
      * @param mask the subset of element the animation should affect
      */
-    void setTime(float time, float blendAmount, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
+    public void setTime(float time, float blendAmount, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
         if (tracks == null) {
             return;
         }
@@ -114,7 +123,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
 
     /**
      * Set the {@link Track}s to be used by this animation.
-     * 
+     *
      * @param tracksArray The tracks to set.
      */
     public void setTracks(Track[] tracksArray) {
@@ -144,7 +153,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
 
     /**
      * Returns the tracks set in {@link #setTracks(com.jme3.animation.Track[]) }.
-     * 
+     *
      * @return the tracks set previously
      */
     public Track[] getTracks() {
@@ -170,9 +179,9 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
     }
 
     /**
-     * 
+     *
      * @param spat
-     * @return 
+     * @return
      */
     public Animation cloneForSpatial(Spatial spat) {
         try {
@@ -191,18 +200,18 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
         }
     }
 
-    @Override   
+    @Override
     public Object jmeClone() {
         try {
             return super.clone();
         } catch( CloneNotSupportedException e ) {
             throw new RuntimeException("Error cloning", e);
         }
-    }     
+    }
 
-    @Override   
+    @Override
     public void cloneFields(Cloner cloner, Object original ) {
-         
+
         // There is some logic here that I'm copying but I'm not sure if
         // it's a mistake or not.  If a track is not a CloneableTrack then it
         // isn't cloned at all... even though they all implement clone() methods. -pspeed
@@ -211,13 +220,13 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
             if( track instanceof ClonableTrack) {
                 newTracks.add(cloner.clone(track));
             } else {
-                // this is the part that seems fishy 
+                // this is the part that seems fishy
                 newTracks.add(track);
             }
         }
         this.tracks = newTracks;
     }
-         
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + "[name=" + name + ", length=" + length + ']';

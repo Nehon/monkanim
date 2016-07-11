@@ -23,7 +23,7 @@ public class AnimMigrationUtil {
         AnimationManager manager = new AnimationManager(control.getSkeleton());
         for (String name : control.getAnimationNames()) {
             Animation anim = control.getAnim(name);
-            manager.addAnimationClip(fromAnimation(anim));
+            manager.addAnimation(anim);
             manager.createAnimationSequence(name, name);
         }
 

@@ -1,6 +1,7 @@
 package monkanim;
 
 import com.jme3.anim.*;
+import com.jme3.animation.Animation;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
@@ -81,9 +82,9 @@ public class GuiAppState extends BaseAppState {
 
     private void setAnimLabel(AnimAppState animState, String anim) {
         animState.getManager().update(0);
-        Map<AnimationClip, Float> map = animState.getManager().getWeightedAnimMap();
+        Map<Animation, Float> map = animState.getManager().getWeightedAnimMap();
         StringBuilder builder = new StringBuilder();
-        for (AnimationClip key : map.keySet()) {
+        for (Animation key : map.keySet()) {
             builder.append(key.getName()).append(": ").append(String.format("%.0f", map.get(key) * 100f)).append("%, ");
         }
         animLabel.setText(builder.toString());
