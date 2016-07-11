@@ -29,9 +29,8 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.anim;
+package com.jme3.animation;
 
-import com.jme3.animation.*;
 import com.jme3.export.*;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -43,7 +42,7 @@ import java.io.IOException;
  * 
  * @author Kirill Vainer
  */
-public final class AnimBoneTrack implements AnimTrack {
+public final class BoneTrack implements Track {
 
     /**
      * Bone index in the skeleton which this track effects.
@@ -61,7 +60,7 @@ public final class AnimBoneTrack implements AnimTrack {
     /**
      * Serialization-only. Do not use.
      */
-    public AnimBoneTrack() {
+    public BoneTrack() {
     }
 
     /**
@@ -71,7 +70,7 @@ public final class AnimBoneTrack implements AnimTrack {
      * @param translations the translation of the bone for each frame
      * @param rotations the rotation of the bone for each frame
      */
-    public AnimBoneTrack(int targetBoneIndex, float[] times, Vector3f[] translations, Quaternion[] rotations) {
+    public BoneTrack(int targetBoneIndex, float[] times, Vector3f[] translations, Quaternion[] rotations) {
         this.targetBoneIndex = targetBoneIndex;
         this.setKeyframes(times, translations, rotations);
     }
@@ -84,7 +83,7 @@ public final class AnimBoneTrack implements AnimTrack {
      * @param rotations the rotation of the bone for each frame
      * @param scales the scale of the bone for each frame
      */
-    public AnimBoneTrack(int targetBoneIndex, float[] times, Vector3f[] translations, Quaternion[] rotations, Vector3f[] scales) {
+    public BoneTrack(int targetBoneIndex, float[] times, Vector3f[] translations, Quaternion[] rotations, Vector3f[] scales) {
     	this.targetBoneIndex = targetBoneIndex;
         this.setKeyframes(times, translations, rotations, scales);
     }
@@ -93,7 +92,7 @@ public final class AnimBoneTrack implements AnimTrack {
      * Creates a bone track for the given bone index
      * @param targetBoneIndex the bone's index
      */
-    public AnimBoneTrack(int targetBoneIndex) {
+    public BoneTrack(int targetBoneIndex) {
         this.targetBoneIndex = targetBoneIndex;
     }
 
@@ -144,7 +143,7 @@ public final class AnimBoneTrack implements AnimTrack {
      */
     public void setKeyframes(float[] times, Vector3f[] translations, Quaternion[] rotations) {
         if (times.length == 0) {
-            throw new RuntimeException("AnimBoneTrack with no keyframes!");
+            throw new RuntimeException("BoneTrack with no keyframes!");
         }
 
         assert times.length == translations.length && times.length == rotations.length;
@@ -268,7 +267,7 @@ public final class AnimBoneTrack implements AnimTrack {
      * @return a clone of the current object
      */
     @Override
-    public AnimBoneTrack clone() {
+    public BoneTrack clone() {
         int tablesLength = times.length;
 
         float[] times = this.times.clone();
@@ -286,7 +285,7 @@ public final class AnimBoneTrack implements AnimTrack {
         }
         
         // Need to use the constructor here because of the final fields used in this class
-        return new AnimBoneTrack(targetBoneIndex, times, translations, rotations, scales);
+        return new BoneTrack(targetBoneIndex, times, translations, rotations, scales);
     }
     
     @Override

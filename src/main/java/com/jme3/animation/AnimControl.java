@@ -29,19 +29,26 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.anim;
+package com.jme3.animation;
 
-import com.jme3.animation.*;
 import com.jme3.export.*;
-import com.jme3.renderer.*;
+import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
+import com.jme3.scene.control.Control;
+import com.jme3.util.clone.Cloner;
+import com.jme3.util.clone.JmeCloneable;
 import com.jme3.util.TempVars;
-import com.jme3.util.clone.*;
-
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import static xbuf_ext.AnimationsKf.AnimationKF.TargetKind.skeleton;
 
 /**
  * <code>AnimControl</code> is a Spatial control that allows manipulation
@@ -63,26 +70,24 @@ import java.util.Map.Entry;
  *
  * @author Kirill Vainer
  */
-public final class AnimationManager extends AbstractControl implements Cloneable, JmeCloneable {
+public final class AnimControl extends AbstractControl implements Cloneable, JmeCloneable {
 
     /**
-     * Skeleton object must contain corresponding data for the targets' weight buffers.
+     * The animation meta date (containing the skeleton)
      */
-    private AnimationMetaData metaData = new AnimationMetaData();
+    AnimationMetaData metaData = new AnimationMetaData();
 
+    /** only used for backward compatibility */
+    @Deprecated
+    private SkeletonControl skeletonControl;
     /**
      * List of animations
      */
-    private Map<String, AnimationClip> animationMap = new HashMap<>();
-    private Map<String, AnimationSequence> sequences = new HashMap<>();
-
-    private Map<AnimationClip, Float> weightedAnimMap = new LinkedHashMap<>();
-
-    private Map<String, Object> parameters = new HashMap<>();
-
-    private Map<String, AnimationMask> masks = new HashMap<>();
-    private AnimationSequence activeSequence;
-
+    HashMap<String, Animation> animationMap = new HashMap<String, Animation>();
+    /**
+     * Animation channels
+     */
+    private transient ArrayList<AnimChannel> channels = new ArrayList<AnimChannel>();
     /**
      * Animation event listeners
      */
@@ -90,12 +95,12 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
     /**
      * Creates a new animation control for the given skeleton.
-     * The method {@link AnimControl#setAnimations(HashMap) }
+     * The method {@link AnimControl#setAnimations(java.util.HashMap) }
      * must be called after initialization in order for this class to be useful.
      *
      * @param skeleton The skeleton to animate
      */
-    public AnimationManager(Skeleton skeleton) {
+    public AnimControl(Skeleton skeleton) {
         this.metaData.setSkeleton(skeleton);
         reset();
     }
@@ -103,104 +108,67 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     /**
      * Serialization only. Do not use.
      */
-    public AnimationManager() {
+    public AnimControl() {
     }
 
+    /**
+     * Internal use only.
+     */
     @Override
+    public Control cloneForSpatial(Spatial spatial) {
+        try {
+            AnimControl clone = (AnimControl) super.clone();
+            clone.spatial = spatial;
+            clone.channels = new ArrayList<AnimChannel>();
+            clone.listeners = new ArrayList<AnimEventListener>();
+
+            if (skeleton != null) {
+                clone.metaData.setSkeleton(new Skeleton(this.metaData.getSkeleton()));
+            }
+
+            // animationMap is cloned, but only ClonableTracks will be cloned as they need a reference to a cloned spatial
+            for (Entry<String, Animation> animEntry : animationMap.entrySet()) {
+                clone.animationMap.put(animEntry.getKey(), animEntry.getValue().cloneForSpatial(spatial));
+            }
+            
+            return clone;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
+    }
+
+    @Override   
     public Object jmeClone() {
-        AnimationManager clone = (AnimationManager) super.jmeClone();
-        clone.parameters = new HashMap<>();
-        clone.sequences = new HashMap<>();
-        clone.masks = new HashMap<>();
+        AnimControl clone = (AnimControl) super.jmeClone();
+        clone.channels = new ArrayList<AnimChannel>();
         clone.listeners = new ArrayList<AnimEventListener>();
 
         return clone;
-    }
+    }     
 
-    @Override
-    public void cloneFields(Cloner cloner, Object original ) {
+    @Override   
+    public void cloneFields( Cloner cloner, Object original ) {
         super.cloneFields(cloner, original);
 
-        this.metaData.setSkeleton(cloner.clone(((AnimationManager)original).metaData.getSkeleton()));
-
-        for (Entry<String, Object> paramEntry : parameters.entrySet()) {
-            this.parameters.put(paramEntry.getKey(),paramEntry.getValue());
-        }
-
-        for (Entry<String, AnimationSequence> animEntry : sequences.entrySet()) {
-            this.sequences.put(animEntry.getKey(),animEntry.getValue());
-        }
-
-        for (Entry<String, AnimationMask> paramEntry : masks.entrySet()) {
-            this.masks.put(paramEntry.getKey(),paramEntry.getValue());
-        }
-
-        // Note cloneForSpatial() never actually cloned the animation map... just its reference
-        HashMap<String, AnimationClip> newMap = new HashMap<>();
-
+        this.metaData.setSkeleton(cloner.clone(((AnimControl)original).metaData.getSkeleton()));
+ 
+        // Note cloneForSpatial() never actually cloned the animation map... just its reference       
+        HashMap<String, Animation> newMap = new HashMap<>();
+         
         // animationMap is cloned, but only ClonableTracks will be cloned as they need a reference to a cloned spatial
-        for( Entry<String, AnimationClip> e : animationMap.entrySet() ) {
+        for( Map.Entry<String, Animation> e : animationMap.entrySet() ) {
             newMap.put(e.getKey(), cloner.clone(e.getValue()));
         }
-
+        
         this.animationMap = newMap;
     }
-
-    @Override
-    public void setSpatial(Spatial spatial) {
-        super.setSpatial(spatial);
-        metaData.setSpatial(spatial);
-    }
-
-    public AnimationSequence createAnimationSequence(String name){
-        return createAnimationSequence(name, null);
-    }
-
-    public AnimationSequence createAnimationSequence(String name, String... animNames){
-        AnimationSequence sequence = new AnimationSequence(name);
-        if(animNames != null) {
-            for (String animName : animNames) {
-                Anim clip = animationMap.get(animName);
-
-                if (clip == null) {
-                    //we couldn't find a clip with this name, let's look for a sequence
-                    clip = sequences.get(animName);
-                }
-                if (clip == null) {
-                    //we couldn't find a sequence either, let's throw an exception
-                    throw new IllegalArgumentException("Can't find an animation clip or sequence with name " + animName);
-                }
-                sequence.addAnimation(clip);
-            }
-        }
-
-        sequences.put(sequence.getName(), sequence);
-        return sequence;
-    }
-
-    public void setActiveSequence(String sequenceName){
-        activeSequence = sequences.get(sequenceName);
-        activeSequence.reset();
-    }
-
-    public AnimationSequence getActiveSequence(){
-        return activeSequence;
-    }
-
-    public Map<AnimationClip, Float> getWeightedAnimMap() {
-        return weightedAnimMap;
-    }
-
-    public Map<String, AnimationSequence> getSequences() {
-        return sequences;
-    }
-
+         
     /**
      * @param animations Set the animations that this <code>AnimControl</code>
      * will be capable of playing. The animations should be compatible
      * with the skeleton given in the constructor.
      */
-    public void setAnimationsClips(HashMap<String, AnimationClip> animations) {
+    public void setAnimations(HashMap<String, Animation> animations) {
         animationMap = animations;
     }
 
@@ -210,16 +178,16 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @return The animation corresponding to the given name, or null, if no
      * such named animation exists.
      */
-    public AnimationClip getAnimationClip(String name) {
+    public Animation getAnim(String name) {
         return animationMap.get(name);
     }
 
     /**
      * Adds an animation to be available for playing to this
-     * <code>AnimManager</code>.
+     * <code>AnimControl</code>.
      * @param anim The animation to add.
      */
-    public void addAnimationClip(AnimationClip anim) {
+    public void addAnim(Animation anim) {
         animationMap.put(anim.getName(), anim);
     }
 
@@ -227,7 +195,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * Remove an animation so that it is no longer available for playing.
      * @param anim The animation to remove.
      */
-    public void removeAnimationClip(AnimationClip anim) {
+    public void removeAnim(Animation anim) {
         if (!animationMap.containsKey(anim.getName())) {
             throw new IllegalArgumentException("Given animation does not exist "
                     + "in this AnimControl");
@@ -236,8 +204,59 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         animationMap.remove(anim.getName());
     }
 
-    public AnimationMetaData getMetaData() {
-        return metaData;
+    /**
+     * Create a new animation channel, by default assigned to all bones
+     * in the skeleton.
+     * 
+     * @return A new animation channel for this <code>AnimControl</code>.
+     */
+    public AnimChannel createChannel() {
+        AnimChannel channel = new AnimChannel(this);
+        channels.add(channel);
+        return channel;
+    }
+
+    /**
+     * Return the animation channel at the given index.
+     * @param index The index, starting at 0, to retrieve the <code>AnimChannel</code>.
+     * @return The animation channel at the given index, or throws an exception
+     * if the index is out of bounds.
+     *
+     * @throws IndexOutOfBoundsException If no channel exists at the given index.
+     */
+    public AnimChannel getChannel(int index) {
+        return channels.get(index);
+    }
+
+    /**
+     * @return The number of channels that are controlled by this
+     * <code>AnimControl</code>.
+     *
+     * @see AnimControl#createChannel()
+     */
+    public int getNumChannels() {
+        return channels.size();
+    }
+
+    /**
+     * Clears all the channels that were created.
+     *
+     * @see AnimControl#createChannel()
+     */
+    public void clearChannels() {
+        for (AnimChannel animChannel : channels) {
+            for (AnimEventListener list : listeners) {
+                list.onAnimCycleDone(this, animChannel, animChannel.getAnimationName());
+            }
+        }
+        channels.clear();
+    }
+
+    /**
+     * @return The skeleton of this <code>AnimControl</code>.
+     */
+    public Skeleton getSkeleton() {
+        return metaData.getSkeleton();
     }
 
     /**
@@ -265,17 +284,63 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
     }
 
+    /**
+     * Clears all the listeners added to this <code>AnimControl</code>
+     *
+     * @see AnimControl#addListener(com.jme3.animation.AnimEventListener)
+     */
+    public void clearListeners() {
+        listeners.clear();
+    }
+
+    void notifyAnimChange(AnimChannel channel, String name) {
+        for (int i = 0; i < listeners.size(); i++) {
+            listeners.get(i).onAnimChange(this, channel, name);
+        }
+    }
+
+    void notifyAnimCycleDone(AnimChannel channel, String name) {
+        for (int i = 0; i < listeners.size(); i++) {
+            listeners.get(i).onAnimCycleDone(this, channel, name);
+        }
+    }
+
+    /**
+     * Internal use only.
+     */
+    @Override
+    public void setSpatial(Spatial spatial) {
+        if (spatial == null && skeletonControl != null) {
+            this.spatial.removeControl(skeletonControl);
+        }
+
+        super.setSpatial(spatial);
+        metaData.setSpatial(spatial);
+
+        //Backward compatibility.
+        if (spatial != null && skeletonControl != null) {
+            spatial.addControl(skeletonControl);
+        }
+    }
+
     final void reset() {
         if (metaData.getSkeleton() != null) {
             metaData.getSkeleton().resetAndUpdate();
         }
     }
 
+    public AnimationMetaData getMetaData() {
+        return metaData;
+    }
+
+
+
+
     /**
      * @return The names of all animations that this <code>AnimControl</code>
      * can play.
      */
-    public Collection<String> getAnimationClipNames() {
+    public Collection<String> getAnimationNames() {
         return animationMap.keySet();
     }
 
@@ -284,8 +349,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @param name The name of the animation
      * @return The length of time, in seconds, of the named animation.
      */
-    public float getAnimationClipLength(String name) {
-        AnimationClip a = animationMap.get(name);
+    public float getAnimationLength(String name) {
+        Animation a = animationMap.get(name);
         if (a == null) {
             throw new IllegalArgumentException("The animation " + name
                     + " does not exist in this AnimControl");
@@ -303,30 +368,11 @@ public final class AnimationManager extends AbstractControl implements Cloneable
             metaData.getSkeleton().reset(); // reset skeleton to bind pose
         }
 
-        if(activeSequence != null) {
-
-            activeSequence.update(tpf);
-            weightedAnimMap.clear();
-            activeSequence.resolve(weightedAnimMap, 1);
-
-            float length = 0;
-
-            TempVars vars = TempVars.get();
-            for (Entry<AnimationClip, Float> animEntry : weightedAnimMap.entrySet()) {
-
-                AnimationClip anim = animEntry.getKey();
-                if(anim.getLength() > length){
-                    length = anim.getLength();
-                }
-                //System.err.println(anim.getName()+ ": " + animEntry.getValue());
-                anim.setTime(activeSequence.getTime(), animEntry.getValue(), metaData, null, vars);
-            }
-            vars.release();
-            if(activeSequence.getTime() >= activeSequence.getLength()){
-                activeSequence.reset();
-            }
-
+        TempVars vars = TempVars.get();
+        for (int i = 0; i < channels.size(); i++) {
+            channels.get(i).update(tpf, vars);
         }
+        vars.release();
 
         if (metaData.getSkeleton() != null) {
             metaData.getSkeleton().updateWorldVectors();
@@ -344,7 +390,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
         OutputCapsule oc = ex.getCapsule(this);
-        oc.write(metaData.getSkeleton(), "skeleton", null);
+        oc.write(skeleton, "skeleton", null);
         oc.writeStringSavableMap(animationMap, "animations", null);
     }
 
@@ -353,9 +399,24 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         super.read(im);
         InputCapsule in = im.getCapsule(this);
         metaData.setSkeleton((Skeleton) in.readSavable("skeleton", null));
-        HashMap<String, AnimationClip> loadedAnimationMap = (HashMap<String, AnimationClip>) in.readStringSavableMap("animations", null);
+        HashMap<String, Animation> loadedAnimationMap = (HashMap<String, Animation>) in.readStringSavableMap("animations", null);
         if (loadedAnimationMap != null) {
             animationMap = loadedAnimationMap;
+        }
+
+        if (im.getFormatVersion() == 0) {
+            // Changed for backward compatibility with j3o files generated 
+            // before the AnimControl/SkeletonControl split.
+
+            // If we find a target mesh array the AnimControl creates the 
+            // SkeletonControl for old files and add it to the spatial.        
+            // When backward compatibility won't be needed anymore this can deleted        
+            Savable[] sav = in.readSavableArray("targets", null);
+            if (sav != null) {
+                // NOTE: allow the targets to be gathered automatically
+                skeletonControl = new SkeletonControl(metaData.getSkeleton());
+                spatial.addControl(skeletonControl);
+            }
         }
     }
 }

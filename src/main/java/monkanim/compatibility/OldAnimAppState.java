@@ -13,7 +13,7 @@ import com.jme3.scene.*;
  */
 public class OldAnimAppState extends BaseAppState {
 
-    public static final float BLEND_TIME = 0.2f;
+    public static final float BLEND_TIME = 0.3f;
 
     @Override
     protected void initialize(Application app) {
@@ -54,7 +54,6 @@ public class OldAnimAppState extends BaseAppState {
                     channel.setLoopMode(LoopMode.DontLoop);
                     return;
                 }
-
             }
 
             @Override

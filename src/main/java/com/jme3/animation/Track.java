@@ -29,13 +29,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.anim;
+package com.jme3.animation;
 
-import com.jme3.animation.AnimationMetaData;
 import com.jme3.export.Savable;
 import com.jme3.util.TempVars;
 
-public interface AnimTrack extends Savable, Cloneable {
+public interface Track extends Savable, Cloneable {
 
     /**
      * Sets the time of the animation.
@@ -60,7 +59,7 @@ public interface AnimTrack extends Savable, Cloneable {
      * This method creates a clone of the current object.
      * @return a clone of the current object
      */
-    public AnimTrack clone();
+    public Track clone();
     
     /**
      * Get the times in seconds for all keyframes.

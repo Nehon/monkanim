@@ -11,10 +11,9 @@ public class AnimMigrationUtil {
     public static AnimationClip fromAnimation(Animation anim){
         AnimationClip clip = new AnimationClip(anim.getName(), anim.getLength());
         for (Track track : anim.getTracks()) {
-            if(track instanceof BoneTrack){
-                BoneTrack bt = (BoneTrack)track;
-                AnimBoneTrack abt = new AnimBoneTrack(bt.getTargetBoneIndex(),bt.getTimes(),bt.getTranslations(),bt.getRotations(), bt.getScales());
-                clip.addTrack(abt);
+            //only use boneTrack for now but this will change...
+            if(track instanceof com.jme3.animation.BoneTrack){
+                clip.addTrack(track);
             }
         }
         return clip;
@@ -25,8 +24,7 @@ public class AnimMigrationUtil {
         for (String name : control.getAnimationNames()) {
             Animation anim = control.getAnim(name);
             manager.addAnimationClip(fromAnimation(anim));
-
-            AnimationSequence sequence = manager.createAnimationSequence(name, name);
+            manager.createAnimationSequence(name, name);
         }
 
         return manager;

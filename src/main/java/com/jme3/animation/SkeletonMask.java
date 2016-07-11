@@ -1,6 +1,4 @@
-package com.jme3.anim;
-
-import com.jme3.animation.Skeleton;
+package com.jme3.animation;
 
 import java.util.BitSet;
 
@@ -21,19 +19,20 @@ public class SkeletonMask implements AnimationMask {
     /**
      * creates a skeleton mask where the given bones will be affected by an animation
      */
-    public SkeletonMask(AnimationManager manager, String... boneNames) {
-        addBones(manager, boneNames);
+    public SkeletonMask(Skeleton skeleton, String... boneNames) {
+        addBones(skeleton, boneNames);
     }
 
 
     /**
      * returns true if the given bone index reference a bone that should be affected by the animation.
+     *
      * @param boneIndex the index of the bone to lookup
      * @return true if the given bone index reference a bone that should be affected by the animation.
      */
     @Override
     public boolean isAffected(int boneIndex) {
-        if(affectedBones == null){
+        if (affectedBones == null) {
             return false;
         }
         return affectedBones.get(boneIndex);
@@ -42,11 +41,9 @@ public class SkeletonMask implements AnimationMask {
     /**
      * Add bones to be influenced by this animation mask.
      */
-    public void addBones(AnimationManager manager, String... boneNames) {
+    public void addBones(Skeleton skeleton, String... boneNames) {
 
-        Skeleton skeleton = manager.getSkeleton();
-
-        if(affectedBones == null) {
+        if (affectedBones == null) {
             affectedBones = new BitSet(skeleton.getBoneCount());
         }
         for (String boneName : boneNames) {

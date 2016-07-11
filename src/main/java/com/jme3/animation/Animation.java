@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2016 jMonkeyEngine
+ * Copyright (c) 2009-2012 jMonkeyEngine
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,62 +29,54 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.jme3.anim;
+package com.jme3.animation;
 
-import com.jme3.animation.*;
 import com.jme3.export.*;
 import com.jme3.scene.Spatial;
 import com.jme3.util.*;
 import com.jme3.util.clone.*;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * The animation class updates the animation target with the tracks of a given type.
- *
+ * 
  * @author Kirill Vainer, Marcin Roguski (Kaelthas)
  */
-public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
+public class Animation implements Savable, Cloneable, JmeCloneable {
 
-    /**
-     * The name of the animation.
+    /** 
+     * The name of the animation. 
      */
     private String name;
-    /**
-     * The length of the animation.
+    /** 
+     * The length of the animation. 
      */
     private float length;
-    /**
-     * The tracks of the animation.
+    /** 
+     * The tracks of the animation. 
      */
     private SafeArrayList<Track> tracks = new SafeArrayList<Track>(Track.class);
 
     /**
-     * The number of frames in the data tracks.
-     */
-    private int nbFrames = -1;
-
-    /**
      * Serialization-only. Do not use.
      */
-    public AnimationClip() {
+    public Animation() {
     }
 
     /**
      * Creates a new <code>Animation</code> with the given name and length.
-     *
-     * @param name   The name of the animation.
+     * 
+     * @param name The name of the animation.
      * @param length Length in seconds of the animation.
      */
-    public AnimationClip(String name, float length) {
+    public Animation(String name, float length) {
         this.name = name;
         this.length = length;
     }
 
     /**
      * The name of the bone animation
-     *
      * @return name of the bone animation
      */
     public String getName() {
@@ -93,32 +85,19 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
 
     /**
      * Returns the length in seconds of this animation
-     *
+     * 
      * @return the length in seconds of this animation
      */
-    @Override
     public float getLength() {
         return length;
-    }
-
-    @Override
-    public void resolve(Map<AnimationClip, Float> weightedAnimMap, float globalWeight) {
-        if(globalWeight == 0){
-            return;
-        }
-        weightedAnimMap.put(this, globalWeight);
-    }
-
-    public int getNbFrames() {
-        return nbFrames;
     }
 
     /**
      * This method sets the current time of the animation.
      * This method behaves differently for every known track type.
      * Override this method if you have your own type of track.
-     *
-     * @param time        the time of the animation
+     * 
+     * @param time the time of the animation
      * @param blendAmount the blend amount factor
      * @param metaData The animation meta data
      * @param mask the subset of element the animation should affect
@@ -135,33 +114,25 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
 
     /**
      * Set the {@link Track}s to be used by this animation.
-     *
+     * 
      * @param tracksArray The tracks to set.
      */
     public void setTracks(Track[] tracksArray) {
         for (Track track : tracksArray) {
-            addTrack(track);
+            tracks.add(track);
         }
     }
 
     /**
      * Adds a track to this animation
-     *
      * @param track the track to add
      */
     public void addTrack(Track track) {
         tracks.add(track);
-       // if (nbFrames == -1) {
-            nbFrames = track.getKeyFrameTimes().length;
-//        } else if(nbFrames != track.getKeyFrameTimes().length){
-//            throw new IllegalArgumentException("The track has a different number of frames than the ones already in the animation (new track: " + track.getKeyFrameTimes().length + ", animation: " + nbFrames + ")");
-//        }
-
     }
 
     /**
      * removes a track from this animation
-     *
      * @param track the track to remove
      */
     public void removeTrack(Track track) {
@@ -172,8 +143,8 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
     }
 
     /**
-     * Returns the tracks set in {@link #setTracks(Track[]) }.
-     *
+     * Returns the tracks set in {@link #setTracks(com.jme3.animation.Track[]) }.
+     * 
      * @return the tracks set previously
      */
     public Track[] getTracks() {
@@ -182,13 +153,12 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
 
     /**
      * This method creates a clone of the current object.
-     *
      * @return a clone of the current object
      */
     @Override
-    public AnimationClip clone() {
+    public Animation clone() {
         try {
-            AnimationClip result = (AnimationClip) super.clone();
+            Animation result = (Animation) super.clone();
             result.tracks = new SafeArrayList<Track>(Track.class);
             for (Track track : tracks) {
                 result.tracks.add(track.clone());
@@ -200,15 +170,20 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
     }
 
     /**
+     * 
      * @param spat
-     * @return
+     * @return 
      */
-    public AnimationClip cloneForSpatial(Spatial spat) {
+    public Animation cloneForSpatial(Spatial spat) {
         try {
-            AnimationClip result = (AnimationClip) super.clone();
+            Animation result = (Animation) super.clone();
             result.tracks = new SafeArrayList<Track>(Track.class);
             for (Track track : tracks) {
-                result.tracks.add(track);
+                if (track instanceof ClonableTrack) {
+                    result.tracks.add(((ClonableTrack) track).cloneForSpatial(spat));
+                } else {
+                    result.tracks.add(track);
+                }
             }
             return result;
         } catch (CloneNotSupportedException e) {
@@ -216,24 +191,24 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
         }
     }
 
-    @Override
+    @Override   
     public Object jmeClone() {
         try {
             return super.clone();
-        } catch (CloneNotSupportedException e) {
+        } catch( CloneNotSupportedException e ) {
             throw new RuntimeException("Error cloning", e);
         }
-    }
+    }     
 
-    @Override
-    public void cloneFields(Cloner cloner, Object original) {
-
+    @Override   
+    public void cloneFields(Cloner cloner, Object original ) {
+         
         // There is some logic here that I'm copying but I'm not sure if
         // it's a mistake or not.  If a track is not a CloneableTrack then it
         // isn't cloned at all... even though they all implement clone() methods. -pspeed
         SafeArrayList<Track> newTracks = new SafeArrayList<>(Track.class);
-        for (Track track : tracks) {
-            if (track instanceof ClonableTrack) {
+        for( Track track : tracks ) {
+            if( track instanceof ClonableTrack) {
                 newTracks.add(cloner.clone(track));
             } else {
                 // this is the part that seems fishy 
@@ -242,10 +217,10 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
         }
         this.tracks = newTracks;
     }
-
+         
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[name=" + name + ", length=" + length + ", nbFrames=" + nbFrames + ']';
+        return getClass().getSimpleName() + "[name=" + name + ", length=" + length + ']';
     }
 
     @Override
@@ -253,7 +228,6 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
         OutputCapsule out = ex.getCapsule(this);
         out.write(name, "name", null);
         out.write(length, "length", 0f);
-        out.write(nbFrames, "nbFrames", -1);
         out.write(tracks.getArray(), "tracks", null);
     }
 
@@ -262,11 +236,17 @@ public class AnimationClip implements Savable, Cloneable, JmeCloneable, Anim {
         InputCapsule in = im.getCapsule(this);
         name = in.readString("name", null);
         length = in.readFloat("length", 0f);
-        nbFrames = in.readInt("nbFrames", -1);
+
         Savable[] arr = in.readSavableArray("tracks", null);
-        tracks = new SafeArrayList<Track>(Track.class);
-        for (Savable savable : arr) {
-            tracks.add((Track) savable);
+        if (arr != null) {
+            // NOTE: Backward compat only .. Some animations have no
+            // tracks set at all even though it makes no sense.
+            // Since there's a null check in setTime(),
+            // its only appropriate that the check is made here as well.
+            tracks = new SafeArrayList<Track>(Track.class);
+            for (Savable savable : arr) {
+                tracks.add((Track) savable);
+            }
         }
     }
 }

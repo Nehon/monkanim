@@ -1,4 +1,4 @@
-package com.jme3.anim;
+package com.jme3.animation;
 
 /**
  * Created by Nehon on 05/07/2016.
