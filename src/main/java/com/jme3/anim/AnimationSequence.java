@@ -1,5 +1,6 @@
 package com.jme3.anim;
 
+import com.jme3.anim.blending.*;
 import com.jme3.animation.*;
 import com.jme3.math.FastMath;
 import com.jme3.util.SafeArrayList;
@@ -15,10 +16,10 @@ import java.util.*;
 public class AnimationSequence implements Anim {
 
     private String name;
-    private float value = 0;
     private float time;
     private float speed = 1;
     private float length = 0;
+    private BlendSpace blendSpace = new LinearBlendSpace();
 
     private List<Anim> animations = new SafeArrayList<>(Anim.class);
 
@@ -77,30 +78,16 @@ public class AnimationSequence implements Anim {
         if(animations.isEmpty()){
             return;
         }
-        if(animations.size() == 1 || value == 0){
-            animations.get(0).resolve(weightedAnimMap, globalWeight);
-            return;
-        }
-        if(value == 1){
-            animations.get(animations.size() - 1).resolve(weightedAnimMap, globalWeight);
-            return;
-        }
+        blendSpace.blend(animations, weightedAnimMap, globalWeight);
 
-        float scaledWeight = value * (animations.size() - 1);
-        int highIndex = (int)FastMath.ceil(scaledWeight);
-        int lowIndex = highIndex - 1;
-
-//        System.err.println(name + "x" + globalWeight + ":" + animations.get(lowIndex) +":" + ((1 - (scaledWeight - lowIndex)) * globalWeight) + ", "+ animations.get(highIndex) +":" + ((scaledWeight - lowIndex) * globalWeight));
-        animations.get(lowIndex).resolve(weightedAnimMap, (1 - (scaledWeight - lowIndex)) * globalWeight);
-        animations.get(highIndex).resolve(weightedAnimMap, (scaledWeight - lowIndex) * globalWeight);
     }
 
-    public void setValue(float value) {
-        this.value = FastMath.clamp(value, 0, 1);
+    public BlendSpace getBlendSpace() {
+        return blendSpace;
     }
 
-    public float getValue() {
-        return value;
+    public void setBlendSpace(BlendSpace blendSpace) {
+        this.blendSpace = blendSpace;
     }
 
     public String getName() {

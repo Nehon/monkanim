@@ -1,6 +1,7 @@
 package monkanim;
 
 import com.jme3.anim.*;
+import com.jme3.anim.blending.LinearBlendSpace;
 import com.jme3.animation.*;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
@@ -45,7 +46,7 @@ public class AnimAppState extends BaseAppState {
 
         //Creating a blending sequence between several sequences
         AnimationSequence seq = manager.createAnimationSequence("walk_jog", "walk", "jog");
-        seq.setValue(0.5f);
+        ((LinearBlendSpace)seq.getBlendSpace()).setValue(0.5f);
         manager.createAnimationSequence("walk_jog_nestedRun", "walk_jog", "run");
 
         manager.setActiveSequence("walk");

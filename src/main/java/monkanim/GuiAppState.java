@@ -1,6 +1,7 @@
 package monkanim;
 
 import com.jme3.anim.*;
+import com.jme3.anim.blending.LinearBlendSpace;
 import com.jme3.animation.Animation;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
@@ -61,7 +62,7 @@ public class GuiAppState extends BaseAppState {
         animState.getManager().setActiveSequence(anim);
 
         animState.getManager().getActiveSequence().setSpeed(speedRef.get().floatValue());
-        animState.getManager().getActiveSequence().setValue((speedRef.get().floatValue() - 1) / 2f);
+        ((LinearBlendSpace)animState.getManager().getActiveSequence().getBlendSpace()).setValue((speedRef.get().floatValue() - 1) / 2f);
 
         setAnimLabel(animState, anim);
 
@@ -73,7 +74,7 @@ public class GuiAppState extends BaseAppState {
             speedLabel.setText("Speed: " + String.format("%.2f", speedRef.get()));
             AnimAppState animState = getState(AnimAppState.class);
             animState.getManager().getActiveSequence().setSpeed(speedRef.get().floatValue());
-            animState.getManager().getActiveSequence().setValue((speedRef.get().floatValue() - 1) / 2f);
+            ((LinearBlendSpace)animState.getManager().getActiveSequence().getBlendSpace()).setValue((speedRef.get().floatValue() - 1) / 2f);
             String anim = animState.getManager().getActiveSequence().getName();
             setAnimLabel(animState, anim);
             speedRef.update();
