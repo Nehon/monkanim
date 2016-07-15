@@ -1,6 +1,7 @@
 package com.jme3.anim.blending;
 
 import com.jme3.animation.*;
+import com.jme3.util.SafeArrayList;
 
 import java.util.*;
 
@@ -9,6 +10,6 @@ import java.util.*;
  */
 public interface BlendSpace {
 
-    void blend (List<Anim> anims, Map<Animation, Float> weightedAnimMap, float globalWeight);
+    void blend (List<Anim> anims, SafeArrayList<Animation> weightedAnims, float globalWeight, float time);
 
 }

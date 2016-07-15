@@ -2,10 +2,12 @@ package monkanim;
 
 import com.jme3.anim.*;
 import com.jme3.anim.blending.LinearBlendSpace;
+import com.jme3.anim.statemachine.*;
 import com.jme3.animation.*;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.light.DirectionalLight;
+import com.jme3.material.Material;
 import com.jme3.math.*;
 import com.jme3.scene.*;
 
@@ -15,6 +17,7 @@ import com.jme3.scene.*;
 public class AnimAppState extends BaseAppState {
 
     AnimationManager manager;
+    private String currentState = "";
     @Override
     protected void initialize(Application app) {
         Node s = (Node)app.getAssetManager().loadModel("Models/puppet.xbuf");
@@ -36,8 +39,11 @@ public class AnimAppState extends BaseAppState {
 
         //removing old stuff and adding new stuff
         SkeletonControl skelControl = rig.getControl(SkeletonControl.class);
+        Skeleton skeleton = skelControl.getSkeleton();
+        System.err.println(skeleton.getBone(0));
         rig.removeControl(AnimControl.class);
         rig.removeControl(SkeletonControl.class);
+
         rig.addControl(manager);
         rig.addControl(skelControl);
 
@@ -49,7 +55,19 @@ public class AnimAppState extends BaseAppState {
         ((LinearBlendSpace)seq.getBlendSpace()).setValue(0.5f);
         manager.createAnimationSequence("walk_jog_nestedRun", "walk_jog", "run");
 
-        manager.setActiveSequence("walk");
+        //this is bad... I have to make a better API
+        AnimState state = new AnimState("idle");
+        state.setSequence(manager.getSequences().get("idle"));
+        manager.setInitialState(state);
+
+        state = new AnimState("walk");
+        state.setSequence(manager.getSequences().get("walk"));
+        manager.ANY_STATE.addTransition(new InterruptingTransition(state, () -> currentState.equals("walk")));
+
+    }
+
+    public void setCurrentState(String currentState) {
+        this.currentState = currentState;
     }
 
     private void dumpSceneGraph(Spatial n, String indent){
@@ -62,6 +80,13 @@ public class AnimAppState extends BaseAppState {
             for (Spatial spatial : node.getChildren()) {
                 dumpSceneGraph(spatial , indent + "    ");
             }
+        }
+    }
+
+    private void dumpSkeleton(Skeleton skeleton){
+
+        for (int i = 0; i < skeleton.getBoneCount(); i++) {
+            System.err.println(skeleton.getBone(i));
         }
     }
 

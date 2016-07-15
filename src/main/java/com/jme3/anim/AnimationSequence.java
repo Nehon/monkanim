@@ -69,21 +69,25 @@ public class AnimationSequence implements Anim {
         return length;
     }
 
-    void update(float tpf){
+    public void update(float tpf){
         time += tpf * speed;
     }
 
     @Override
-    public void resolve(Map<Animation, Float> weightedAnimMap, float globalWeight){
+    public void resolve(SafeArrayList<Animation> weightedAnims, float globalWeight, float time){
         if(animations.isEmpty()){
             return;
         }
-        blendSpace.blend(animations, weightedAnimMap, globalWeight);
+        blendSpace.blend(animations, weightedAnims, globalWeight, time);
 
     }
 
     public BlendSpace getBlendSpace() {
         return blendSpace;
+    }
+
+    public boolean isFinished(){
+        return time >= length;
     }
 
     public void setBlendSpace(BlendSpace blendSpace) {

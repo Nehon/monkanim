@@ -2,6 +2,7 @@ package com.jme3.anim.blending;
 
 import com.jme3.animation.*;
 import com.jme3.math.FastMath;
+import com.jme3.util.SafeArrayList;
 import com.simsilica.lemur.core.*;
 
 
@@ -15,13 +16,13 @@ public class LinearBlendSpace implements BlendSpace {
     private float value;
 
     @Override
-    public void blend(List<Anim> animations, Map<Animation, Float> weightedAnimMap, float globalWeight) {
+    public void blend(List<Anim> animations, SafeArrayList<Animation> weightedAnims, float globalWeight, float time) {
         if(animations.size() == 1 || value == 0){
-            animations.get(0).resolve(weightedAnimMap, globalWeight);
+            animations.get(0).resolve(weightedAnims, globalWeight, time);
             return;
         }
         if(value == 1){
-            animations.get(animations.size() - 1).resolve(weightedAnimMap, globalWeight);
+            animations.get(animations.size() - 1).resolve(weightedAnims, globalWeight, time);
             return;
         }
 
@@ -30,8 +31,8 @@ public class LinearBlendSpace implements BlendSpace {
         int lowIndex = highIndex - 1;
 
 //        System.err.println(name + "x" + globalWeight + ":" + animations.get(lowIndex) +":" + ((1 - (scaledWeight - lowIndex)) * globalWeight) + ", "+ animations.get(highIndex) +":" + ((scaledWeight - lowIndex) * globalWeight));
-        animations.get(lowIndex).resolve(weightedAnimMap, (1 - (scaledWeight - lowIndex)) * globalWeight);
-        animations.get(highIndex).resolve(weightedAnimMap, (scaledWeight - lowIndex) * globalWeight);
+        animations.get(lowIndex).resolve(weightedAnims, (1 - (scaledWeight - lowIndex)) * globalWeight, time);
+        animations.get(highIndex).resolve(weightedAnims, (scaledWeight - lowIndex) * globalWeight, time);
     }
 
     public float getValue() {

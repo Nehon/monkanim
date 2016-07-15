@@ -31,6 +31,7 @@
  */
 package com.jme3.animation;
 
+import com.jme3.anim.blending.BlendingData;
 import com.jme3.export.*;
 import com.jme3.scene.Spatial;
 import com.jme3.util.*;
@@ -58,6 +59,17 @@ public class Animation implements Savable, Cloneable, JmeCloneable, Anim {
      * The tracks of the animation.
      */
     private SafeArrayList<Track> tracks = new SafeArrayList<Track>(Track.class);
+
+    /**
+     * Data holding the information for the blending
+     * This data is transient and will be updated on every frame each time the animation is used.
+     * I'd like to find a better place for this, but it will do for now.
+     */
+    private BlendingData blendingData = new BlendingData();
+
+    public BlendingData getBlendingData() {
+        return blendingData;
+    }
 
     /**
      * Serialization-only. Do not use.
@@ -94,11 +106,13 @@ public class Animation implements Savable, Cloneable, JmeCloneable, Anim {
     }
 
     @Override
-    public void resolve(Map<Animation, Float> weightedAnimMap, float globalWeight) {
+    public void resolve(SafeArrayList<Animation> weightedAnims, float globalWeight, float time) {
         if(globalWeight == 0){
             return;
         }
-        weightedAnimMap.put(this, globalWeight);
+        blendingData.setWeight(globalWeight);
+        blendingData.setTime(time);
+        weightedAnims.add(this);
     }
 
     /**

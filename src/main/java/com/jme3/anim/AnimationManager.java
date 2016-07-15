@@ -31,12 +31,13 @@
  */
 package com.jme3.anim;
 
+import com.jme3.anim.statemachine.AnimState;
 import com.jme3.animation.*;
 import com.jme3.export.*;
 import com.jme3.renderer.*;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
-import com.jme3.util.TempVars;
+import com.jme3.util.*;
 import com.jme3.util.clone.*;
 
 import java.io.IOException;
@@ -74,23 +75,50 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * List of animations
      */
     private Map<String, Animation> animationMap = new HashMap<>();
+    /**
+     * Sequences
+     */
     private Map<String, AnimationSequence> sequences = new HashMap<>();
-
-    private Map<Animation, Float> weightedAnimMap = new LinkedHashMap<>();
-
-    private Map<String, Object> parameters = new HashMap<>();
-
-    private Map<String, AnimationMask> masks = new HashMap<>();
-    private AnimationSequence activeSequence;
+    /**
+     * The flat map of animation with corresponding weight updated on each frame
+     */
+    private SafeArrayList<Animation> weightedAnims = new SafeArrayList<>(Animation.class);
 
     /**
-     * Animation event listeners
+     * Could help with blend space to have basic types parameter added by the user and pick the appropriate blend space
+     * Not used right now
+     */
+    private Map<String, Object> parameters = new HashMap<>();
+    /**
+     * Animation mask list, that holdw all the masks used by this animation manager.
+     */
+    private Map<String, AnimationMask> masks = new HashMap<>();
+    public final static AnimationMask DEFAULT_MASK = new AnimationMask() {
+        @Override
+        public boolean isAffected(int index) {
+            return true;
+        }
+    };
+    public final AnimState ANY_STATE = new AnimState("Any");
+
+    /**
+     * the list of all states of this Animation manager.
+     */
+    private Map<String, AnimState> stateMachine = new HashMap<>();
+    /**
+     * Whenever a state is activated it's added to this list, and will be updated on each frame.
+     */
+    private SafeArrayList<AnimState> activeStates = new SafeArrayList<>(AnimState.class);
+
+
+    /**
+     * Animation event listeners - This I hope to get rid of....
      */
     private transient ArrayList<AnimEventListener> listeners = new ArrayList<AnimEventListener>();
 
     /**
-     * Creates a new animation control for the given skeleton.
-     * The method {@link AnimControl#setAnimations(HashMap) }
+     * Creates a new animation manager for the given skeleton.
+     * The method {@link AnimationManager#setAnimationsClips(HashMap) }
      * must be called after initialization in order for this class to be useful.
      *
      * @param skeleton The skeleton to animate
@@ -112,7 +140,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         clone.parameters = new HashMap<>();
         clone.sequences = new HashMap<>();
         clone.masks = new HashMap<>();
-        clone.listeners = new ArrayList<AnimEventListener>();
+        clone.listeners = new ArrayList<>();
 
         return clone;
     }
@@ -153,7 +181,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     }
 
     public AnimationSequence createAnimationSequence(String name){
-        return createAnimationSequence(name, null);
+        return createAnimationSequence(name, (String) null);
     }
 
     public AnimationSequence createAnimationSequence(String name, String... animNames){
@@ -178,17 +206,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         return sequence;
     }
 
-    public void setActiveSequence(String sequenceName){
-        activeSequence = sequences.get(sequenceName);
-        activeSequence.reset();
-    }
-
-    public AnimationSequence getActiveSequence(){
-        return activeSequence;
-    }
-
-    public Map<Animation, Float> getWeightedAnimMap() {
-        return weightedAnimMap;
+    public SafeArrayList<Animation> getWeightedAnims() {
+        return weightedAnims;
     }
 
     public Map<String, AnimationSequence> getSequences() {
@@ -294,6 +313,10 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         return a.getLength();
     }
 
+    public void setInitialState(AnimState state){
+        activeStates.add(state);
+    }
+
     /**
      * Internal use only.
      */
@@ -303,29 +326,31 @@ public final class AnimationManager extends AbstractControl implements Cloneable
             metaData.getSkeleton().reset(); // reset skeleton to bind pose
         }
 
-        if(activeSequence != null) {
+        //Update States.
+        //Note that we can have several active animState only if the have different masks...
+        //There is no accurate way to check this as it depends on the transition conditions
+        for (AnimState animState : activeStates.getArray()) {
+            weightedAnims.clear();
+            AnimState state = animState;
+            AnimState newState = animState.update(ANY_STATE.getInterruptingTransitions(),ANY_STATE.getTransitions());
+            if(animState != newState){
+                //removing the old state and adding the new one to the activeState list.
+                //Note that this is crucial to keep activeStates as a SafeArrayList, as ArraytList doesn't allow modifications while iterating over it.
+                activeStates.remove(animState);
+                activeStates.add(newState);
+                state = newState;
+            }
+            state.resolve(weightedAnims, tpf);
+            //maybe keep the mask from previous iteration and throw an exception if 2 states are active for the same mask...
+            //or maybe do something clever and blend them at 0.5...we'll see
 
-            activeSequence.update(tpf);
-            weightedAnimMap.clear();
-            activeSequence.resolve(weightedAnimMap, 1);
-
-            float length = 0;
-
+            //Update animations.
             TempVars vars = TempVars.get();
-            for (Entry<Animation, Float> animEntry : weightedAnimMap.entrySet()) {
-
-                Animation anim = animEntry.getKey();
-                if(anim.getLength() > length){
-                    length = anim.getLength();
-                }
+            for (Animation anim : weightedAnims.getArray()) {
                 //System.err.println(anim.getName()+ ": " + animEntry.getValue());
-                anim.setTime(activeSequence.getTime(), animEntry.getValue(), metaData, null, vars);
+                anim.setTime(anim.getBlendingData().getTime(), anim.getBlendingData().getWeight(), metaData, state.getMask(), vars);
             }
             vars.release();
-            if(activeSequence.getTime() >= activeSequence.getLength()){
-                activeSequence.reset();
-            }
-
         }
 
         if (metaData.getSkeleton() != null) {

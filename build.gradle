@@ -40,6 +40,7 @@ dependencies {
     compile "com.simsilica:lemur:1.8.1"
     compile "org.codehaus.groovy:groovy-all:2.4.3"
     compile "com.github.xbuf.jme3_xbuf:jme3_xbuf_loader:$jme3_xbuf_version"
+    testCompile 'junit:junit:4.12'
     
     runtime project(':assets')    
 }

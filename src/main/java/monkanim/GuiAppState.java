@@ -59,37 +59,37 @@ public class GuiAppState extends BaseAppState {
 
     private void setAnim(String anim) {
         AnimAppState animState = getState(AnimAppState.class);
-        animState.getManager().setActiveSequence(anim);
+        animState.setCurrentState(anim);
 
-        animState.getManager().getActiveSequence().setSpeed(speedRef.get().floatValue());
-        ((LinearBlendSpace)animState.getManager().getActiveSequence().getBlendSpace()).setValue((speedRef.get().floatValue() - 1) / 2f);
+        //animState.getManager().getActiveSequence().setSpeed(speedRef.get().floatValue());
+        //((LinearBlendSpace)animState.getManager().getActiveSequence().getBlendSpace()).setValue((speedRef.get().floatValue() - 1) / 2f);
 
-        setAnimLabel(animState, anim);
+        //setAnimLabel(animState, anim);
 
     }
 
     @Override
     public void update(float tpf) {
-        if (speedRef.needsUpdate()) {
-            speedLabel.setText("Speed: " + String.format("%.2f", speedRef.get()));
-            AnimAppState animState = getState(AnimAppState.class);
-            animState.getManager().getActiveSequence().setSpeed(speedRef.get().floatValue());
-            ((LinearBlendSpace)animState.getManager().getActiveSequence().getBlendSpace()).setValue((speedRef.get().floatValue() - 1) / 2f);
-            String anim = animState.getManager().getActiveSequence().getName();
-            setAnimLabel(animState, anim);
-            speedRef.update();
-        }
+//        if (speedRef.needsUpdate()) {
+//            speedLabel.setText("Speed: " + String.format("%.2f", speedRef.get()));
+//            AnimAppState animState = getState(AnimAppState.class);
+//            animState.getManager().getActiveSequence().setSpeed(speedRef.get().floatValue());
+//            ((LinearBlendSpace)animState.getManager().getActiveSequence().getBlendSpace()).setValue((speedRef.get().floatValue() - 1) / 2f);
+//            String anim = animState.getManager().getActiveSequence().getName();
+//            setAnimLabel(animState, anim);
+//            speedRef.update();
+//        }
     }
 
-    private void setAnimLabel(AnimAppState animState, String anim) {
-        animState.getManager().update(0);
-        Map<Animation, Float> map = animState.getManager().getWeightedAnimMap();
-        StringBuilder builder = new StringBuilder();
-        for (Animation key : map.keySet()) {
-            builder.append(key.getName()).append(": ").append(String.format("%.0f", map.get(key) * 100f)).append("%, ");
-        }
-        animLabel.setText(builder.toString());
-    }
+//    private void setAnimLabel(AnimAppState animState, String anim) {
+//        animState.getManager().update(0);
+//        Map<Animation, Float> map = animState.getManager().getWeightedAnims();
+//        StringBuilder builder = new StringBuilder();
+//        for (Animation key : map.keySet()) {
+//            builder.append(key.getName()).append(": ").append(String.format("%.0f", map.get(key) * 100f)).append("%, ");
+//        }
+//        animLabel.setText(builder.toString());
+//    }
 
 
     @Override

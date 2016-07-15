@@ -1,5 +1,7 @@
 package com.jme3.animation;
 
+import com.jme3.util.SafeArrayList;
+
 import java.util.Map;
 
 /**
@@ -8,6 +10,6 @@ import java.util.Map;
 public interface Anim {
 
     float getLength();
-    void resolve(Map<Animation, Float> weightedAnimMap, float globalWeight);
+    void resolve(SafeArrayList<Animation> weightedAnims, float globalWeight, float time);
 
 }
