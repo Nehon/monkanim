@@ -206,6 +206,12 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         return sequence;
     }
 
+    public AnimState createStateForSequence(String sequenceName){
+        AnimState state = new AnimState(sequenceName);
+        state.setSequence(sequences.get(sequenceName));
+        return state;
+    }
+
     public SafeArrayList<Animation> getWeightedAnims() {
         return weightedAnims;
     }

@@ -6,6 +6,7 @@ import com.jme3.animation.Animation;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.RenderManager;
 import com.simsilica.lemur.*;
 import com.simsilica.lemur.core.*;
 
@@ -70,6 +71,7 @@ public class GuiAppState extends BaseAppState {
 
     @Override
     public void update(float tpf) {
+
 //        if (speedRef.needsUpdate()) {
 //            speedLabel.setText("Speed: " + String.format("%.2f", speedRef.get()));
 //            AnimAppState animState = getState(AnimAppState.class);
@@ -91,6 +93,12 @@ public class GuiAppState extends BaseAppState {
 //        animLabel.setText(builder.toString());
 //    }
 
+
+    @Override
+    public void render(RenderManager rm) {
+        AnimAppState animState = getState(AnimAppState.class);
+        animState.setCurrentState("");
+    }
 
     @Override
     protected void cleanup(Application app) {

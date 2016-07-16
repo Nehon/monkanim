@@ -12,4 +12,8 @@ public class InterruptingTransition extends Transition {
     public InterruptingTransition(AnimState targetState, TransitionCondition condition) {
         super(targetState, condition);
     }
+
+    public InterruptingTransition(AnimState targetState, float duration, TransitionCondition condition) {
+        super(targetState, duration, condition);
+    }
 }

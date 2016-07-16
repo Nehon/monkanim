@@ -55,14 +55,39 @@ public class AnimAppState extends BaseAppState {
         ((LinearBlendSpace)seq.getBlendSpace()).setValue(0.5f);
         manager.createAnimationSequence("walk_jog_nestedRun", "walk_jog", "run");
 
-        //this is bad... I have to make a better API
-        AnimState state = new AnimState("idle");
-        state.setSequence(manager.getSequences().get("idle"));
-        manager.setInitialState(state);
 
-        state = new AnimState("walk");
-        state.setSequence(manager.getSequences().get("walk"));
-        manager.ANY_STATE.addTransition(new InterruptingTransition(state, () -> currentState.equals("walk")));
+        AnimState idleState = manager.createStateForSequence("idle");
+        manager.ANY_STATE.addTransition(new InterruptingTransition(idleState, () -> currentState.equals("idle")));
+
+
+        AnimState walkState = manager.createStateForSequence("walk");
+        manager.ANY_STATE.addTransition(new InterruptingTransition(walkState, () -> currentState.equals("walk")));
+
+        AnimState jogState = manager.createStateForSequence("jog");
+        manager.ANY_STATE.addTransition(new InterruptingTransition(jogState, () -> currentState.equals("jog")));
+
+        AnimState kickState = manager.createStateForSequence("kick");
+        manager.ANY_STATE.addTransition(new InterruptingTransition(kickState, () -> currentState.equals("kick")));
+
+        AnimState runState = manager.createStateForSequence("run");
+        manager.ANY_STATE.addTransition(new InterruptingTransition(runState, () -> currentState.equals("run")));
+
+        AnimState state = manager.createStateForSequence("walk_jog_run");
+        manager.ANY_STATE.addTransition(new InterruptingTransition(state, () -> currentState.equals("walk_jog_run")));
+
+        state = manager.createStateForSequence("walk_jog");
+        manager.ANY_STATE.addTransition(new InterruptingTransition(state, () -> currentState.equals("walk_jog")));
+
+        state = manager.createStateForSequence("walk_jog_nestedRun");
+        manager.ANY_STATE.addTransition(new InterruptingTransition(state, () -> currentState.equals("walk_jog_nestedRun")));
+
+        manager.setInitialState(idleState);
+
+        walkState.addTransition(new Transition(jogState));
+        jogState.addTransition(new Transition(runState));
+        runState.addTransition(new Transition(kickState));
+        kickState.addTransition(new Transition(idleState));
+
 
     }
 
