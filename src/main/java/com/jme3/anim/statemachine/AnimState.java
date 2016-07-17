@@ -2,10 +2,7 @@ package com.jme3.anim.statemachine;
 
 import com.jme3.anim.AnimationSequence;
 import com.jme3.animation.*;
-import com.jme3.math.FastMath;
 import com.jme3.util.SafeArrayList;
-
-import java.util.Map;
 
 /**
  * Created by Nehon on 13/07/2016.
@@ -127,7 +124,7 @@ public class AnimState {
             //here we check that we are not trying to evaluate a transition that would go to the current state
             //This case is possible because of the ANY_STATE
             //Then evaluating the transition condition
-            if (transition.getTargetState() != this && transition.evaluateCondition()) {
+            if (transition.evaluateTrigger()) {
                 //the condition is met, let prepare and return the new state
                 AnimState newState = transition.getTargetState();
                 //for blending, we save the sequand current time in the transition

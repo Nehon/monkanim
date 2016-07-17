@@ -83,10 +83,11 @@ public class AnimAppState extends BaseAppState {
 
         manager.setInitialState(idleState);
 
-        walkState.addTransition(new Transition(jogState));
-        jogState.addTransition(new Transition(runState));
-        runState.addTransition(new Transition(kickState));
-        kickState.addTransition(new Transition(idleState));
+        manager.ANY_STATE.addTransition(new InterruptingTransition(walkState, () -> currentState.equals("anim_chain")));
+        walkState.addTransition(new Transition(jogState, () -> currentState.equals("anim_chain")));
+        jogState.addTransition(new Transition(runState, () -> currentState.equals("anim_chain")));
+        runState.addTransition(new Transition(kickState, () -> currentState.equals("anim_chain")));
+        kickState.addTransition(new Transition(idleState, () -> currentState.equals("anim_chain")));
 
 
     }

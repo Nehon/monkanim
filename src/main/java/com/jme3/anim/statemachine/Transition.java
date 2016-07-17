@@ -6,27 +6,28 @@ package com.jme3.anim.statemachine;
 public class Transition {
 
     private AnimState targetState;
-    private TransitionCondition condition;
+    protected TransitionTrigger trigger;
     private float duration = 0.3f;
     private float fromTime;
+
 
     public Transition(AnimState targetState) {
         this.targetState = targetState;
     }
 
-    public Transition(AnimState targetState, TransitionCondition condition) {
-        this.condition = condition;
+    public Transition(AnimState targetState, TransitionTrigger trigger) {
+        this.trigger = trigger;
         this.targetState = targetState;
     }
 
-    public Transition(AnimState targetState, float duration, TransitionCondition condition) {
-        this(targetState, condition);
+    public Transition(AnimState targetState, float duration, TransitionTrigger trigger) {
+        this(targetState, trigger);
         this.duration = duration;
     }
 
-    public boolean evaluateCondition(){
-        //if no condition then we consider it true;
-        return condition == null || condition.isMet();
+    public boolean evaluateTrigger(){
+        //if no trigger then we consider it true;
+        return trigger== null || trigger.evaluate();
     }
 
     public AnimState getTargetState() {

@@ -55,7 +55,8 @@ public class GuiAppState extends BaseAppState {
             Button button = buttonContainer.addChild(new Button(seqEntry.getKey()));
             button.addClickCommands((Button source) -> setAnim(seqEntry.getKey()));
         }
-
+        Button button = buttonContainer.addChild(new Button("anim chain"));
+        button.addClickCommands((Button source) -> setAnim("anim_chain"));
     }
 
     private void setAnim(String anim) {
@@ -94,11 +95,6 @@ public class GuiAppState extends BaseAppState {
 //    }
 
 
-    @Override
-    public void render(RenderManager rm) {
-        AnimAppState animState = getState(AnimAppState.class);
-        animState.setCurrentState("");
-    }
 
     @Override
     protected void cleanup(Application app) {
