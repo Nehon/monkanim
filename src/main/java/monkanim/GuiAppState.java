@@ -7,6 +7,7 @@ import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
+import com.jme3.util.SafeArrayList;
 import com.simsilica.lemur.*;
 import com.simsilica.lemur.core.*;
 
@@ -63,36 +64,34 @@ public class GuiAppState extends BaseAppState {
         AnimAppState animState = getState(AnimAppState.class);
         animState.setCurrentState(anim);
 
-        //animState.getManager().getActiveSequence().setSpeed(speedRef.get().floatValue());
-        //((LinearBlendSpace)animState.getManager().getActiveSequence().getBlendSpace()).setValue((speedRef.get().floatValue() - 1) / 2f);
+        animState.getManager().getActiveStates().get(0).getSequence().setSpeed(speedRef.get().floatValue());
 
-        //setAnimLabel(animState, anim);
-
+        setAnimLabel(animState, anim);
     }
 
     @Override
     public void update(float tpf) {
 
-//        if (speedRef.needsUpdate()) {
-//            speedLabel.setText("Speed: " + String.format("%.2f", speedRef.get()));
-//            AnimAppState animState = getState(AnimAppState.class);
-//            animState.getManager().getActiveSequence().setSpeed(speedRef.get().floatValue());
-//            ((LinearBlendSpace)animState.getManager().getActiveSequence().getBlendSpace()).setValue((speedRef.get().floatValue() - 1) / 2f);
-//            String anim = animState.getManager().getActiveSequence().getName();
-//            setAnimLabel(animState, anim);
-//            speedRef.update();
-//        }
+        if (speedRef.needsUpdate()) {
+            speedLabel.setText("Speed: " + String.format("%.2f", speedRef.get()));
+            AnimAppState animState = getState(AnimAppState.class);
+            animState.getManager().getActiveStates().get(0).getSequence().setSpeed(speedRef.get().floatValue());
+            animState.setBlendValue((speedRef.get().floatValue() - 1) / 2f);
+            String anim = animState.getManager().getActiveStates().get(0).getSequence().getName();
+            setAnimLabel(animState, anim);
+            speedRef.update();
+        }
     }
 
-//    private void setAnimLabel(AnimAppState animState, String anim) {
-//        animState.getManager().update(0);
-//        Map<Animation, Float> map = animState.getManager().getWeightedAnims();
-//        StringBuilder builder = new StringBuilder();
-//        for (Animation key : map.keySet()) {
-//            builder.append(key.getName()).append(": ").append(String.format("%.0f", map.get(key) * 100f)).append("%, ");
-//        }
-//        animLabel.setText(builder.toString());
-//    }
+    private void setAnimLabel(AnimAppState animState, String anim) {
+        animState.getManager().update(0);
+        SafeArrayList<Animation> map = animState.getManager().getWeightedAnims();
+        StringBuilder builder = new StringBuilder();
+        for (Animation animation : map.getArray()) {
+            builder.append(animation.getName()).append(": ").append(String.format("%.0f", animation.getBlendingData().getWeight() * 100f)).append("%, ");
+        }
+        animLabel.setText(builder.toString());
+    }
 
 
 

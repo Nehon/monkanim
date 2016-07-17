@@ -18,6 +18,7 @@ public class AnimAppState extends BaseAppState {
 
     AnimationManager manager;
     private String currentState = "";
+    private LinearBlendSpace blendSpace = new LinearBlendSpace();
     @Override
     protected void initialize(Application app) {
         Node s = (Node)app.getAssetManager().loadModel("Models/puppet.xbuf");
@@ -48,12 +49,14 @@ public class AnimAppState extends BaseAppState {
         rig.addControl(skelControl);
 
         //Creating a blending sequence between walk, jog and run
-        manager.createAnimationSequence("walk_jog_run", "walk", "jog", "run");
+        AnimationSequence sequence = manager.createAnimationSequence("walk_jog_run", "walk", "jog", "run");
+        sequence.setBlendSpace(blendSpace);
 
         //Creating a blending sequence between several sequences
         AnimationSequence seq = manager.createAnimationSequence("walk_jog", "walk", "jog");
         ((LinearBlendSpace)seq.getBlendSpace()).setValue(0.5f);
-        manager.createAnimationSequence("walk_jog_nestedRun", "walk_jog", "run");
+        sequence = manager.createAnimationSequence("walk_jog_nestedRun", "walk_jog", "run");
+        sequence.setBlendSpace(blendSpace);
 
 
         AnimState idleState = manager.createStateForSequence("idle");
@@ -107,6 +110,10 @@ public class AnimAppState extends BaseAppState {
                 dumpSceneGraph(spatial , indent + "    ");
             }
         }
+    }
+
+    public void setBlendValue(float value){
+        blendSpace.setValue(value);
     }
 
     private void dumpSkeleton(Skeleton skeleton){

@@ -364,6 +364,10 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
     }
 
+    public SafeArrayList<AnimState> getActiveStates() {
+        return activeStates;
+    }
+
     /**
      * Internal use only.
      */
