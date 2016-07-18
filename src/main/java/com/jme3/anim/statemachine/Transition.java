@@ -7,7 +7,7 @@ public class Transition {
 
     private AnimState targetState;
     protected TransitionTrigger trigger;
-    private float duration = 0.3f;
+    private float duration = 0.2f;
     private float fromTime;
 
 

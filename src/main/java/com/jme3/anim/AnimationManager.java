@@ -71,6 +71,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      */
     private AnimationMetaData metaData = new AnimationMetaData();
 
+    private float globalSpeed = 1.0f;
+
     /**
      * List of animations
      */
@@ -331,6 +333,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         if (metaData.getSkeleton() != null) {
             metaData.getSkeleton().reset(); // reset skeleton to bind pose
         }
+        tpf *= globalSpeed;
 
         //Update States.
         //Note that we can have several active animState only if the have different masks...
@@ -392,5 +395,13 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         if (loadedAnimationMap != null) {
             animationMap = loadedAnimationMap;
         }
+    }
+
+    public float getGlobalSpeed() {
+        return globalSpeed;
+    }
+
+    public void setGlobalSpeed(float globalSpeed) {
+        this.globalSpeed = globalSpeed;
     }
 }

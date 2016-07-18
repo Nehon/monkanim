@@ -19,8 +19,10 @@ import java.util.*;
 public class GuiAppState extends BaseAppState {
 
     Label speedLabel;
+    Label globalSpeedLabel;
     Label animLabel;
     VersionedReference<Double> speedRef;
+    VersionedReference<Double> globalSpeedRef;
 
 
     @Override
@@ -49,7 +51,7 @@ public class GuiAppState extends BaseAppState {
 
         Container buttonContainer = new Container();
         ((SimpleApplication) app).getGuiNode().attachChild(buttonContainer);
-        buttonContainer.setLocalTranslation(300, 500, 0);
+        buttonContainer.setLocalTranslation(100, 500, 0);
 
         AnimAppState animState = getState(AnimAppState.class);
         for (Map.Entry<String, AnimationSequence> seqEntry : animState.getManager().getSequences().entrySet()) {
@@ -58,6 +60,20 @@ public class GuiAppState extends BaseAppState {
         }
         Button button = buttonContainer.addChild(new Button("anim chain"));
         button.addClickCommands((Button source) -> setAnim("anim_chain"));
+
+        // TopWindow
+        Container topWindow = new Container();
+        ((SimpleApplication) app).getGuiNode().attachChild(topWindow);
+        topWindow.setPreferredSize(new Vector3f(200, 70, 1));
+        topWindow.setLocalTranslation(app.getCamera().getWidth() / 2 - 100, 700, 0);
+
+        topWindow.addChild(new Label("Global speed"));
+        globalSpeedLabel = new Label("1.0");
+        topWindow.addChild(globalSpeedLabel);
+        Slider topSlider = new Slider(new DefaultRangedValueModel(0, 5, 1), Axis.X);
+        topSlider.setDelta(0.1f);
+        topWindow.addChild(topSlider);
+        globalSpeedRef = topSlider.getModel().createReference();
     }
 
     private void setAnim(String anim) {
@@ -80,6 +96,13 @@ public class GuiAppState extends BaseAppState {
             String anim = animState.getManager().getActiveStates().get(0).getSequence().getName();
             setAnimLabel(animState, anim);
             speedRef.update();
+        }
+
+        if(globalSpeedRef.needsUpdate()){
+            AnimAppState animState = getState(AnimAppState.class);
+            animState.getManager().setGlobalSpeed(globalSpeedRef.get().floatValue());
+            globalSpeedLabel.setText( String.format("%.2f", globalSpeedRef.get()));
+            globalSpeedRef.update();
         }
     }
 
