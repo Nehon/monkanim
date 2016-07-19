@@ -19,6 +19,10 @@ public class InterruptingTransition extends Transition {
         super(targetState, duration, condition);
     }
 
+    public InterruptingTransition(AnimState targetState, float duration) {
+        super(targetState, duration);
+    }
+
     public boolean evaluateTrigger(){
         //if no trigger then we consider it true;
         if (trigger == null){

@@ -182,6 +182,10 @@ public class AnimState {
         return fromState;
     }
 
+    public String getName() {
+        return name;
+    }
+
     /**
      * clears the incomingTransition and the fromState (previous state)
      */

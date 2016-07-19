@@ -5,9 +5,11 @@ package com.jme3.anim.statemachine;
  */
 public class Transition {
 
+    public final static float DEFAULT_BLEND_DURATION = 0.4f;
+
     private AnimState targetState;
     protected TransitionTrigger trigger;
-    private float duration = 0.2f;
+    private float duration = DEFAULT_BLEND_DURATION;
     private float fromTime;
 
 
@@ -24,6 +26,12 @@ public class Transition {
         this(targetState, trigger);
         this.duration = duration;
     }
+
+    public Transition(AnimState targetState, float duration) {
+        this(targetState);
+        this.duration = duration;
+    }
+
 
     public boolean evaluateTrigger(){
         //if no trigger then we consider it true;
@@ -48,5 +56,17 @@ public class Transition {
 
     public void setDuration(float duration) {
         this.duration = duration;
+    }
+
+    public void setTargetState(AnimState targetState) {
+        this.targetState = targetState;
+    }
+
+    public TransitionTrigger getTrigger() {
+        return trigger;
+    }
+
+    public void setTrigger(TransitionTrigger trigger) {
+        this.trigger = trigger;
     }
 }

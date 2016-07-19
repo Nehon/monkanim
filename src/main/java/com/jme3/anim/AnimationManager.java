@@ -45,24 +45,22 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
- * <code>AnimControl</code> is a Spatial control that allows manipulation
+ * <code>AnimationManager</code> is a Spatial control that allows manipulation
  * of skeletal animation.
  *
- * The control currently supports:
- * 1) Animation blending/transitions
- * 2) Multiple animation channels
+ * The manager currently supports:
+ * 1) Animation blending and animation transitions (with blending)
+ * 2) Multiple animation mask //TODO not yet actually...
  * 3) Multiple skins
- * 4) Animation event listeners
- * 5) Animated model cloning
- * 6) Animated model binary import/export
+ * 4) Animation event listeners //TODO I hope it won't...but I guess I'll have to do something similar
+ * 5) Animated model cloning //TODO not anymore...have to fix it
+ * 6) Animated model binary import/export //TODO not anymore...have to fix it
  * 7) Hardware skinning
  * 8) Attachments
  * 9) Add/remove skins
  *
- * Planned:
- * 1) Morph/Pose animation
  *
- * @author Kirill Vainer
+ * @author Rémy Bouquet (Nehon)
  */
 public final class AnimationManager extends AbstractControl implements Cloneable, JmeCloneable {
 
@@ -71,6 +69,9 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      */
     private AnimationMetaData metaData = new AnimationMetaData();
 
+    /**
+     * the global speed of the motion
+     */
     private float globalSpeed = 1.0f;
 
     /**
@@ -106,7 +107,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     /**
      * the list of all states of this Animation manager.
      */
-    private Map<String, AnimState> stateMachine = new HashMap<>();
+    private Map<String, AnimState> states = new HashMap<>();
     /**
      * Whenever a state is activated it's added to this list, and will be updated on each frame.
      */
@@ -138,6 +139,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
     @Override
     public Object jmeClone() {
+        //TODO fix the clone
         AnimationManager clone = (AnimationManager) super.jmeClone();
         clone.parameters = new HashMap<>();
         clone.sequences = new HashMap<>();
@@ -149,6 +151,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
     @Override
     public void cloneFields(Cloner cloner, Object original ) {
+        //TODO fix the cloneFields
         super.cloneFields(cloner, original);
 
         this.metaData.setSkeleton(cloner.clone(((AnimationManager)original).metaData.getSkeleton()));
@@ -179,15 +182,28 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     @Override
     public void setSpatial(Spatial spatial) {
         super.setSpatial(spatial);
+        //TODO this is only needed for Audio and effect traks... may not be needed anymore.
         metaData.setSpatial(spatial);
     }
 
-    public AnimationSequence createAnimationSequence(String name){
-        return createAnimationSequence(name, (String) null);
+    /**
+     * Creates an empty animation sequence
+     * @param sequenceName the namee of the sequence
+     * @return the created sequence
+     */
+    //TODO not sure that's really needed...
+    public AnimationSequence createAnimationSequence(String sequenceName){
+        return createAnimationSequence(sequenceName, (String) null);
     }
 
-    public AnimationSequence createAnimationSequence(String name, String... animNames){
-        AnimationSequence sequence = new AnimationSequence(name);
+    /**
+     * Creates an animation sequence with the given sequenceName and made of a list of animation according to the given animNames.
+     * @param sequenceName the sequence name
+     * @param animNames an array of animations names.
+     * @return the created sequence
+     */
+    public AnimationSequence createAnimationSequence(String sequenceName, String... animNames){
+        AnimationSequence sequence = new AnimationSequence(sequenceName);
         if(animNames != null) {
             for (String animName : animNames) {
                 Anim clip = animationMap.get(animName);
@@ -208,27 +224,76 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         return sequence;
     }
 
+    /**
+     * Creates a state for the given sequence name, named as the sequence.
+     * @param sequenceName the name of the states sequence
+     * @return the created state
+     */
     public AnimState createStateForSequence(String sequenceName){
-        AnimState state = new AnimState(sequenceName);
-        state.setSequence(sequences.get(sequenceName));
-        return state;
-    }
-
-    public SafeArrayList<Animation> getWeightedAnims() {
-        return weightedAnims;
-    }
-
-    public Map<String, AnimationSequence> getSequences() {
-        return sequences;
+        return createStateForSequence(sequenceName, sequenceName);
     }
 
     /**
-     * @param animations Set the animations that this <code>AnimControl</code>
-     * will be capable of playing. The animations should be compatible
-     * with the skeleton given in the constructor.
+     * Creates a state for the given sequence name, with the given state name.
+     * @param sequenceName the name of the states sequence
+     * @param stateName the name of the state
+     * @return the created state
      */
-    public void setAnimationsClips(HashMap<String, Animation> animations) {
-        animationMap = animations;
+    public AnimState createStateForSequence(String sequenceName, String stateName){
+        AnimationSequence sequence = sequences.get(sequenceName);
+        if(sequence == null){
+            throw new IllegalArgumentException("Cannot find sequence with name " + sequenceName);
+        }
+        AnimState state = new AnimState(stateName);
+        state.setSequence(sequence);
+        states.put(stateName, state);
+        return state;
+    }
+
+    /**
+     * Returns the state with the given name.
+     * returns null if the state is not found.
+     * @param stateName the name of the state
+     * @return the state.
+     */
+    public AnimState getState(String stateName){
+        return states.get(stateName);
+    }
+
+    /**
+     * returns a read only collection of the states.
+     * @return the states.
+     */
+    public Collection<AnimState> getStates(){
+        return states.values();
+    }
+
+    /**
+     * Sets the initial state of this AnimationManager.
+     * @param state the initial state
+     */
+    //TODO this is not really great as it just adds the state in the active states... using this while tha animation is playing would just be weird...
+    public void setInitialState(AnimState state){
+        activeStates.add(state);
+    }
+
+
+    /**
+     * This should be used only for debugging purpose.
+     * Returns a read only list of the animations with their computed blendingData.
+     *
+     * @return the list of animation with their blending data.
+     */
+    public List<Animation> getDebugWeightedAnims() {
+        return Collections.unmodifiableList(weightedAnims);
+    }
+
+    /**
+     * returns a read only collection of sequences
+     * @return the sequences.
+     */
+    public Collection<AnimationSequence> getSequences() {
+        return sequences.values();
     }
 
     /**
@@ -243,7 +308,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
     /**
      * Adds an animation to be available for playing to this
-     * <code>AnimManager</code>.
+     * <code>AnimationManager</code>.
      * @param anim The animation to add.
      */
     public void addAnimation(Animation anim) {
@@ -263,8 +328,46 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         animationMap.remove(anim.getName());
     }
 
+    /**
+     * returns a read only collection of the animations of this AnimationManager.
+     * @return
+     */
+    public Collection<Animation> getAnimations(){
+        return animationMap.values();
+    }
+
+    /**
+     * returns the meta data of this <code>AnimationManager</code>.
+     * @return the meta data
+     */
     public AnimationMetaData getMetaData() {
         return metaData;
+    }
+
+    /**
+     * returns a read only list of the active states of this AnimationManager.
+     * @return
+     */
+    public List<AnimState> getActiveStates() {
+        return Collections.unmodifiableList(activeStates);
+    }
+
+
+    /**
+     * returns the globale speed of this AnimationManager
+     * @return
+     */
+    public float getGlobalSpeed() {
+        return globalSpeed;
+    }
+
+    /**
+     * Sets the global speed of this animation manager.
+     * Not that it will be multiplied with individual sequences speed.
+     * @param globalSpeed
+     */
+    public void setGlobalSpeed(float globalSpeed) {
+        this.globalSpeed = globalSpeed;
     }
 
     /**
@@ -296,33 +399,6 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         if (metaData.getSkeleton() != null) {
             metaData.getSkeleton().resetAndUpdate();
         }
-    }
-
-    /**
-     * @return The names of all animations that this <code>AnimControl</code>
-     * can play.
-     */
-    public Collection<String> getAnimationNames() {
-        return animationMap.keySet();
-    }
-
-    /**
-     * Returns the length of the given named animation.
-     * @param name The name of the animation
-     * @return The length of time, in seconds, of the named animation.
-     */
-    public float getAnimationLength(String name) {
-        Animation a = animationMap.get(name);
-        if (a == null) {
-            throw new IllegalArgumentException("The animation " + name
-                    + " does not exist in this AnimControl");
-        }
-
-        return a.getLength();
-    }
-
-    public void setInitialState(AnimState state){
-        activeStates.add(state);
     }
 
     /**
@@ -367,9 +443,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
     }
 
-    public SafeArrayList<AnimState> getActiveStates() {
-        return activeStates;
-    }
+
 
     /**
      * Internal use only.
@@ -378,6 +452,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     protected void controlRender(RenderManager rm, ViewPort vp) {
     }
 
+    //TODO fix write
     @Override
     public void write(JmeExporter ex) throws IOException {
         super.write(ex);
@@ -386,6 +461,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         oc.writeStringSavableMap(animationMap, "animations", null);
     }
 
+    //TODO fix read
     @Override
     public void read(JmeImporter im) throws IOException {
         super.read(im);
@@ -397,11 +473,5 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
     }
 
-    public float getGlobalSpeed() {
-        return globalSpeed;
-    }
 
-    public void setGlobalSpeed(float globalSpeed) {
-        this.globalSpeed = globalSpeed;
-    }
 }

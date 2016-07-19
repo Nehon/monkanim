@@ -1,17 +1,15 @@
 package monkanim;
 
 import com.jme3.anim.*;
-import com.jme3.anim.blending.LinearBlendSpace;
 import com.jme3.animation.Animation;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.RenderManager;
 import com.jme3.util.SafeArrayList;
 import com.simsilica.lemur.*;
 import com.simsilica.lemur.core.*;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Created by Nehon on 08/07/2016.
@@ -54,9 +52,9 @@ public class GuiAppState extends BaseAppState {
         buttonContainer.setLocalTranslation(100, 500, 0);
 
         AnimAppState animState = getState(AnimAppState.class);
-        for (Map.Entry<String, AnimationSequence> seqEntry : animState.getManager().getSequences().entrySet()) {
-            Button button = buttonContainer.addChild(new Button(seqEntry.getKey()));
-            button.addClickCommands((Button source) -> setAnim(seqEntry.getKey()));
+        for (AnimationSequence sequence : animState.getManager().getSequences()) {
+            Button button = buttonContainer.addChild(new Button(sequence.getName()));
+            button.addClickCommands((Button source) -> setAnim(sequence.getName()));
         }
         Button button = buttonContainer.addChild(new Button("anim chain"));
         button.addClickCommands((Button source) -> setAnim("anim_chain"));
@@ -108,9 +106,9 @@ public class GuiAppState extends BaseAppState {
 
     private void setAnimLabel(AnimAppState animState, String anim) {
         animState.getManager().update(0);
-        SafeArrayList<Animation> map = animState.getManager().getWeightedAnims();
+        List<Animation> map = animState.getManager().getDebugWeightedAnims();
         StringBuilder builder = new StringBuilder();
-        for (Animation animation : map.getArray()) {
+        for (Animation animation : map) {
             builder.append(animation.getName()).append(": ").append(String.format("%.0f", animation.getBlendingData().getWeight() * 100f)).append("%, ");
         }
         animLabel.setText(builder.toString());
