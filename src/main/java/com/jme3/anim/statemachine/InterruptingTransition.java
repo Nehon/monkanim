@@ -7,6 +7,9 @@ public class InterruptingTransition extends Transition {
 
     private boolean lastEvaluation;
 
+    public InterruptingTransition() {
+    }
+
     public InterruptingTransition(AnimState targetState) {
         super(targetState);
     }

@@ -31,7 +31,7 @@
  */
 package com.jme3.anim;
 
-import com.jme3.anim.statemachine.AnimState;
+import com.jme3.anim.statemachine.*;
 import com.jme3.animation.*;
 import com.jme3.export.*;
 import com.jme3.renderer.*;
@@ -102,7 +102,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
             return true;
         }
     };
-    public final AnimState ANY_STATE = new AnimState("Any");
+    public final static String ANY_STATE = "Any State";
+    private final AnimState anyState = new AnimState(ANY_STATE);
 
     /**
      * the list of all states of this Animation manager.
@@ -121,8 +122,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
     /**
      * Creates a new animation manager for the given skeleton.
-     * The method {@link AnimationManager#setAnimationsClips(HashMap) }
-     * must be called after initialization in order for this class to be useful.
+     * You must add animations to this class for it to be useful.
      *
      * @param skeleton The skeleton to animate
      */
@@ -250,6 +250,30 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         return state;
     }
 
+    public Transition transition(String fromState, String toState){
+        AnimState s1 = findState(fromState);
+        AnimState s2 = findState(toState);
+        Transition transition = new Transition(s2);
+        s1.addTransition(transition);
+        return transition;
+    }
+
+    public Transition interrupt(String fromState, String toState){
+        AnimState s1 = findState(fromState);
+        AnimState s2 = findState(toState);
+        InterruptingTransition transition = new InterruptingTransition(s2);
+        s1.addTransition(transition);
+        return transition;
+    }
+
+    private AnimState findState(String fromState) {
+        AnimState s1 = getState(fromState);
+        if(s1 == null){
+            throw new IllegalArgumentException("Cannot find state with name " + fromState);
+        }
+        return s1;
+    }
+
     /**
      * Returns the state with the given name.
      * returns null if the state is not found.
@@ -257,6 +281,9 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @return the state.
      */
     public AnimState getState(String stateName){
+        if(stateName.equals(ANY_STATE)){
+            return anyState;
+        }
         return states.get(stateName);
     }
 
@@ -273,8 +300,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @param state the initial state
      */
     //TODO this is not really great as it just adds the state in the active states... using this while tha animation is playing would just be weird...
-    public void setInitialState(AnimState state){
-        activeStates.add(state);
+    public void startWith(String state){
+        activeStates.add(findState(state));
     }
 
 
@@ -417,7 +444,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         for (AnimState animState : activeStates.getArray()) {
             weightedAnims.clear();
             AnimState state = animState;
-            AnimState newState = animState.update(ANY_STATE.getInterruptingTransitions(),ANY_STATE.getTransitions());
+            AnimState newState = animState.update(anyState.getInterruptingTransitions(),anyState.getTransitions());
             if(animState != newState){
                 //removing the old state and adding the new one to the activeState list.
                 //Note that this is crucial to keep activeStates as a SafeArrayList, as ArraytList doesn't allow modifications while iterating over it.
@@ -442,8 +469,6 @@ public final class AnimationManager extends AbstractControl implements Cloneable
             metaData.getSkeleton().updateWorldVectors();
         }
     }
-
-
 
     /**
      * Internal use only.

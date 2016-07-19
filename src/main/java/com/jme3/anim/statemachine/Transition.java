@@ -12,6 +12,8 @@ public class Transition {
     private float duration = DEFAULT_BLEND_DURATION;
     private float fromTime;
 
+    public Transition() {
+    }
 
     public Transition(AnimState targetState) {
         this.targetState = targetState;
@@ -68,5 +70,15 @@ public class Transition {
 
     public void setTrigger(TransitionTrigger trigger) {
         this.trigger = trigger;
+    }
+
+    public Transition when(TransitionTrigger trigger){
+        setTrigger(trigger);
+        return this;
+    }
+
+    public Transition in(float duration){
+        setDuration(duration);
+        return this;
     }
 }

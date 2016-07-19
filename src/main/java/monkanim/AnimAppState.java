@@ -2,14 +2,13 @@ package monkanim;
 
 import com.jme3.anim.*;
 import com.jme3.anim.blending.LinearBlendSpace;
-import com.jme3.anim.statemachine.*;
 import com.jme3.animation.*;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.light.DirectionalLight;
-import com.jme3.material.Material;
-import com.jme3.math.*;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.*;
+import static com.jme3.anim.AnimationManager.*;
 
 /**
  * Created by Nehon on 08/07/2016.
@@ -58,39 +57,74 @@ public class AnimAppState extends BaseAppState {
         sequence = manager.createAnimationSequence("walk_jog_nestedRun", "walk_jog", "run");
         sequence.setBlendSpace(blendSpace);
 
+        //TODO sequence and states could be the same thing actually... merging them would simplify the API without too much clutter of code.
 
-        AnimState idleState = manager.createStateForSequence("idle");
-        manager.ANY_STATE.addTransition(new InterruptingTransition(idleState, () -> currentState.equals("idle")));
+        //state machins
+        manager.createStateForSequence("idle");
+        manager.createStateForSequence("walk");
+        manager.createStateForSequence("jog");
+        manager.createStateForSequence("kick");
+        manager.createStateForSequence("run");
+        manager.createStateForSequence("walk_jog_run");
+        manager.createStateForSequence("walk_jog");
+        manager.createStateForSequence("walk_jog_nestedRun");
+
+        manager.startWith("idle");
+
+        manager
+            .interrupt(ANY_STATE, "idle")
+            .when(() -> currentState.equals("idle"));
+
+        manager
+            .interrupt(ANY_STATE, "walk")
+            .when(() -> currentState.equals("walk"));
+
+        manager
+            .interrupt(ANY_STATE, "jog")
+            .when(() -> currentState.equals("jog"));
+
+        manager
+            .interrupt(ANY_STATE, "kick")
+            .when(() -> currentState.equals("kick"));
+
+        manager
+            .interrupt(ANY_STATE, "run")
+            .when(() -> currentState.equals("run"));
+
+        manager
+            .interrupt(ANY_STATE, "walk_jog_run")
+            .when(() -> currentState.equals("walk_jog_run"));
+
+        manager
+            .interrupt(ANY_STATE, "walk_jog")
+            .when(() -> currentState.equals("walk_jog"));
+
+        manager
+            .interrupt(ANY_STATE, "walk_jog_nestedRun")
+            .when(() -> currentState.equals("walk_jog_nestedRun"));
 
 
-        AnimState walkState = manager.createStateForSequence("walk");
-        manager.ANY_STATE.addTransition(new InterruptingTransition(walkState, () -> currentState.equals("walk")));
+        //Chain
+        manager
+            .interrupt(ANY_STATE, "walk")
+            .when(() -> currentState.equals("anim_chain"));
 
-        AnimState jogState = manager.createStateForSequence("jog");
-        manager.ANY_STATE.addTransition(new InterruptingTransition(jogState, () -> currentState.equals("jog")));
+        manager
+            .transition("walk","jog")
+            .when(() -> currentState.equals("anim_chain"));
 
-        AnimState kickState = manager.createStateForSequence("kick");
-        manager.ANY_STATE.addTransition(new InterruptingTransition(kickState, () -> currentState.equals("kick")));
+        manager
+            .transition("jog","run")
+            .when(() -> currentState.equals("anim_chain"));
 
-        AnimState runState = manager.createStateForSequence("run");
-        manager.ANY_STATE.addTransition(new InterruptingTransition(runState, () -> currentState.equals("run")));
+        manager
+            .transition("run","kick")
+            .when(() -> currentState.equals("anim_chain"))
+            .in(0.5f);
 
-        AnimState state = manager.createStateForSequence("walk_jog_run");
-        manager.ANY_STATE.addTransition(new InterruptingTransition(state, () -> currentState.equals("walk_jog_run")));
-
-        state = manager.createStateForSequence("walk_jog");
-        manager.ANY_STATE.addTransition(new InterruptingTransition(state, () -> currentState.equals("walk_jog")));
-
-        state = manager.createStateForSequence("walk_jog_nestedRun");
-        manager.ANY_STATE.addTransition(new InterruptingTransition(state, () -> currentState.equals("walk_jog_nestedRun")));
-
-        manager.setInitialState(idleState);
-
-        manager.ANY_STATE.addTransition(new InterruptingTransition(walkState, () -> currentState.equals("anim_chain")));
-        walkState.addTransition(new Transition(jogState, () -> currentState.equals("anim_chain")));
-        jogState.addTransition(new Transition(runState, () -> currentState.equals("anim_chain")));
-        runState.addTransition(new Transition(kickState, () -> currentState.equals("anim_chain")));
-        kickState.addTransition(new Transition(idleState, () -> currentState.equals("anim_chain")));
+        manager
+            .transition("kick","idle")
+            .when(() -> currentState.equals("anim_chain"));
 
 
     }
