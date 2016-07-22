@@ -1,6 +1,7 @@
 package monkanim;
 
 import com.jme3.anim.*;
+import com.jme3.anim.blending.*;
 import com.jme3.animation.Animation;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
@@ -106,10 +107,11 @@ public class GuiAppState extends BaseAppState {
 
     private void setAnimLabel(AnimAppState animState, String anim) {
         animState.getManager().update(0);
-        List<Animation> map = animState.getManager().getDebugWeightedAnims();
+        BlendingDataPool map = animState.getManager().getDebugWeightedAnims();
         StringBuilder builder = new StringBuilder();
-        for (Animation animation : map) {
-            builder.append(animation.getName()).append(": ").append(String.format("%.0f", animation.getBlendingData().getWeight() * 100f)).append("%, ");
+        for (int i = 0; i < map.size(); i++) {
+            BlendingData bData = map.get(i);
+            builder.append(bData.getAnimation().getName()).append(": ").append(String.format("%.0f", bData.getWeight() * 100f)).append("%, ");
         }
         animLabel.setText(builder.toString());
     }

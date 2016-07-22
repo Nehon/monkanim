@@ -92,6 +92,12 @@ public class AnimAppState extends BaseAppState {
         manager.findState("jog").transitionTo("run").when(() -> currentState.equals("anim_chain"));
         manager.findState("run").transitionTo("kick").when(() -> currentState.equals("anim_chain")).in(0.5f);
         manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
+//
+//        for (int i = 0; i < 50; i++) {
+//            Spatial sp = rig.clone();
+//            rootNode.attachChild(sp);
+//            sp.move(i,0,0);
+//        }
 
 
     }

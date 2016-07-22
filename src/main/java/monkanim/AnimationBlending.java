@@ -32,6 +32,8 @@ public class AnimationBlending extends SimpleApplication {
     @Override
     public void simpleInitApp() {
 
+        setPauseOnLostFocus(false);
+
         GuiGlobals.initialize(this);
         BaseStyles.loadGlassStyle();
         GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");

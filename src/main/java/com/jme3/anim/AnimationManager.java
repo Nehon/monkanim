@@ -31,6 +31,7 @@
  */
 package com.jme3.anim;
 
+import com.jme3.anim.blending.*;
 import com.jme3.animation.*;
 import com.jme3.export.*;
 import com.jme3.renderer.*;
@@ -84,7 +85,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     /**
      * The flat map of animation with corresponding weight updated on each frame
      */
-    private SafeArrayList<Animation> weightedAnims = new SafeArrayList<>(Animation.class);
+    private BlendingDataPool weightedAnims = new BlendingDataPool();
 
     /**
      * Could help with blend space to have basic types parameter added by the user and pick the appropriate blend space
@@ -294,8 +295,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      *
      * @return the list of animation with their blending data.
      */
-    public List<Animation> getDebugWeightedAnims() {
-        return Collections.unmodifiableList(weightedAnims);
+    public BlendingDataPool getDebugWeightedAnims() {
+        return weightedAnims;
     }
 
     /**
@@ -441,9 +442,10 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
             //Update animations.
             TempVars vars = TempVars.get();
-            for (Animation anim : weightedAnims.getArray()) {
+            for (int i = 0; i < weightedAnims.size(); i++) {
+                BlendingData bData = weightedAnims.get(i);
                 //System.err.println(anim.getName()+ ": " + animEntry.getValue());
-                anim.setTime(anim.getBlendingData().getTime(), anim.getBlendingData().getWeight(), metaData, state.getMask(), vars);
+                bData.getAnimation().setTime(bData.getTime(), bData.getWeight(), metaData, state.getMask(), vars);
             }
             vars.release();
         }

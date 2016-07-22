@@ -1,8 +1,9 @@
 package com.jme3.animation;
 
+import com.jme3.anim.blending.*;
 import com.jme3.util.SafeArrayList;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Nehon on 09/07/2016.
@@ -10,6 +11,6 @@ import java.util.Map;
 public interface Anim {
 
     float getLength();
-    void resolve(SafeArrayList<Animation> weightedAnims, float globalWeight, float time);
+    void resolve(BlendingDataPool weightedAnims, float globalWeight, float time);
 
 }

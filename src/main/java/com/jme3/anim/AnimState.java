@@ -1,7 +1,10 @@
 package com.jme3.anim;
 
+import com.jme3.anim.blending.*;
 import com.jme3.animation.*;
 import com.jme3.util.SafeArrayList;
+
+import java.util.*;
 
 /**
  * Created by Nehon on 13/07/2016.
@@ -82,7 +85,7 @@ public class AnimState {
         }
     }
 
-    public void resolve(SafeArrayList<Animation> weightedAnims, float tpf) {
+    public void resolve(BlendingDataPool weightedAnims, float tpf) {
         if (sequence == null) {
             return;
         }

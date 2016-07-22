@@ -74,7 +74,7 @@ public class AnimationSequence implements Anim {
     }
 
     @Override
-    public void resolve(SafeArrayList<Animation> weightedAnims, float globalWeight, float time){
+    public void resolve(BlendingDataPool weightedAnims, float globalWeight, float time){
         if(animations.isEmpty()){
             return;
         }
