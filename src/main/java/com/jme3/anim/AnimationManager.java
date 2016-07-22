@@ -31,7 +31,6 @@
  */
 package com.jme3.anim;
 
-import com.jme3.anim.statemachine.*;
 import com.jme3.animation.*;
 import com.jme3.export.*;
 import com.jme3.renderer.*;
@@ -103,7 +102,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
     };
     public final static String ANY_STATE = "Any State";
-    private final AnimState anyState = new AnimState(ANY_STATE);
+    private final AnimState anyState = new AnimState(ANY_STATE, this);
 
     /**
      * the list of all states of this Animation manager.
@@ -244,29 +243,13 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         if(sequence == null){
             throw new IllegalArgumentException("Cannot find sequence with name " + sequenceName);
         }
-        AnimState state = new AnimState(stateName);
+        AnimState state = new AnimState(stateName, this);
         state.setSequence(sequence);
         states.put(stateName, state);
         return state;
     }
 
-    public Transition transition(String fromState, String toState){
-        AnimState s1 = findState(fromState);
-        AnimState s2 = findState(toState);
-        Transition transition = new Transition(s2);
-        s1.addTransition(transition);
-        return transition;
-    }
-
-    public Transition interrupt(String fromState, String toState){
-        AnimState s1 = findState(fromState);
-        AnimState s2 = findState(toState);
-        InterruptingTransition transition = new InterruptingTransition(s2);
-        s1.addTransition(transition);
-        return transition;
-    }
-
-    private AnimState findState(String fromState) {
+    public AnimState findState(String fromState) {
         AnimState s1 = getState(fromState);
         if(s1 == null){
             throw new IllegalArgumentException("Cannot find state with name " + fromState);
@@ -497,6 +480,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
             animationMap = loadedAnimationMap;
         }
     }
+
 
 
 }

@@ -1,4 +1,4 @@
-package com.jme3.anim.statemachine;
+package com.jme3.anim;
 
 /**
  * Created by Nehon on 14/07/2016.

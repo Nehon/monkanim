@@ -1,6 +1,5 @@
-package com.jme3.anim.statemachine;
+package com.jme3.anim;
 
-import com.jme3.anim.AnimationSequence;
 import com.jme3.animation.*;
 import com.jme3.util.SafeArrayList;
 
@@ -14,18 +13,21 @@ public class AnimState {
     private AnimationMask mask;
     private Transition incomingTransition;
     private AnimState fromState;
+    private AnimationManager manager;
 
     private SafeArrayList<Transition> transitions = new SafeArrayList<>(Transition.class);
     private SafeArrayList<InterruptingTransition> interruptingTransitions = new SafeArrayList<>(InterruptingTransition.class);
 
-    public AnimState(String name, AnimationSequence sequence, AnimationMask mask) {
-        this.name = name;
-        this.sequence = sequence;
-        this.mask = mask;
+    /**
+     * Serialization only
+     */
+    public AnimState() {
     }
 
-    public AnimState(String name) {
+
+    AnimState(String name, AnimationManager manager) {
         this.name = name;
+        this.manager = manager;
     }
 
     public void addTransition(Transition transition) {
@@ -182,8 +184,26 @@ public class AnimState {
         return fromState;
     }
 
+    void setManager(AnimationManager manager) {
+        this.manager = manager;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public Transition transitionTo(String targetStateName){
+        AnimState state = manager.findState(targetStateName);
+        Transition transition = new Transition(state);
+        addTransition(transition);
+        return transition;
+    }
+
+    public Transition interruptTo(String targetStateName){
+        AnimState state = manager.findState(targetStateName);
+        InterruptingTransition transition = new InterruptingTransition(state);
+        addTransition(transition);
+        return transition;
     }
 
     /**

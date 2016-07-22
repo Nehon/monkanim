@@ -8,7 +8,8 @@ import com.jme3.app.state.BaseAppState;
 import com.jme3.light.DirectionalLight;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.*;
-import static com.jme3.anim.AnimationManager.*;
+
+import static com.jme3.anim.AnimationManager.ANY_STATE;
 
 /**
  * Created by Nehon on 08/07/2016.
@@ -18,12 +19,13 @@ public class AnimAppState extends BaseAppState {
     AnimationManager manager;
     private String currentState = "";
     private LinearBlendSpace blendSpace = new LinearBlendSpace();
+
     @Override
     protected void initialize(Application app) {
-        Node s = (Node)app.getAssetManager().loadModel("Models/puppet.xbuf");
-        Node rootNode = ((SimpleApplication)app).getRootNode();
+        Node s = (Node) app.getAssetManager().loadModel("Models/puppet.xbuf");
+        Node rootNode = ((SimpleApplication) app).getRootNode();
         rootNode.attachChild(s.getChild("rig"));
-        rootNode.addLight(new DirectionalLight(new Vector3f(-1,-1,-1).normalizeLocal()));
+        rootNode.addLight(new DirectionalLight(new Vector3f(-1, -1, -1).normalizeLocal()));
 
         dumpSceneGraph(rootNode, "");
 
@@ -44,8 +46,12 @@ public class AnimAppState extends BaseAppState {
         rig.removeControl(AnimControl.class);
         rig.removeControl(SkeletonControl.class);
 
+        //Bone b = skelControl.getSkeleton().getBone("Foot_Roll.R");
+
+
         rig.addControl(manager);
         rig.addControl(skelControl);
+
 
         //Creating a blending sequence between walk, jog and run
         AnimationSequence sequence = manager.createAnimationSequence("walk_jog_run", "walk", "jog", "run");
@@ -53,13 +59,13 @@ public class AnimAppState extends BaseAppState {
 
         //Creating a blending sequence between several sequences
         AnimationSequence seq = manager.createAnimationSequence("walk_jog", "walk", "jog");
-        ((LinearBlendSpace)seq.getBlendSpace()).setValue(0.5f);
+        ((LinearBlendSpace) seq.getBlendSpace()).setValue(0.5f);
         sequence = manager.createAnimationSequence("walk_jog_nestedRun", "walk_jog", "run");
         sequence.setBlendSpace(blendSpace);
 
         //TODO sequence and states could be the same thing actually... merging them would simplify the API without too much clutter of code.
 
-        //state machins
+        //state machine
         manager.createStateForSequence("idle");
         manager.createStateForSequence("walk");
         manager.createStateForSequence("jog");
@@ -71,60 +77,21 @@ public class AnimAppState extends BaseAppState {
 
         manager.startWith("idle");
 
-        manager
-            .interrupt(ANY_STATE, "idle")
-            .when(() -> currentState.equals("idle"));
-
-        manager
-            .interrupt(ANY_STATE, "walk")
-            .when(() -> currentState.equals("walk"));
-
-        manager
-            .interrupt(ANY_STATE, "jog")
-            .when(() -> currentState.equals("jog"));
-
-        manager
-            .interrupt(ANY_STATE, "kick")
-            .when(() -> currentState.equals("kick"));
-
-        manager
-            .interrupt(ANY_STATE, "run")
-            .when(() -> currentState.equals("run"));
-
-        manager
-            .interrupt(ANY_STATE, "walk_jog_run")
-            .when(() -> currentState.equals("walk_jog_run"));
-
-        manager
-            .interrupt(ANY_STATE, "walk_jog")
-            .when(() -> currentState.equals("walk_jog"));
-
-        manager
-            .interrupt(ANY_STATE, "walk_jog_nestedRun")
-            .when(() -> currentState.equals("walk_jog_nestedRun"));
-
+        manager.findState(ANY_STATE).interruptTo("idle").when(() -> currentState.equals("idle"));
+        manager.findState(ANY_STATE).interruptTo("walk").when(() -> currentState.equals("walk"));
+        manager.findState(ANY_STATE).interruptTo("jog").when(() -> currentState.equals("jog"));
+        manager.findState(ANY_STATE).interruptTo("kick").when(() -> currentState.equals("kick"));
+        manager.findState(ANY_STATE).interruptTo("run").when(() -> currentState.equals("run"));
+        manager.findState(ANY_STATE).interruptTo("walk_jog_run").when(() -> currentState.equals("walk_jog_run"));
+        manager.findState(ANY_STATE).interruptTo("walk_jog").when(() -> currentState.equals("walk_jog"));
+        manager.findState(ANY_STATE).interruptTo("walk_jog_nestedRun").when(() -> currentState.equals("walk_jog_nestedRun"));
 
         //Chain
-        manager
-            .interrupt(ANY_STATE, "walk")
-            .when(() -> currentState.equals("anim_chain"));
-
-        manager
-            .transition("walk","jog")
-            .when(() -> currentState.equals("anim_chain"));
-
-        manager
-            .transition("jog","run")
-            .when(() -> currentState.equals("anim_chain"));
-
-        manager
-            .transition("run","kick")
-            .when(() -> currentState.equals("anim_chain"))
-            .in(0.5f);
-
-        manager
-            .transition("kick","idle")
-            .when(() -> currentState.equals("anim_chain"));
+        manager.findState(ANY_STATE).interruptTo("walk").when(() -> currentState.equals("anim_chain"));
+        manager.findState("walk").transitionTo("jog").when(() -> currentState.equals("anim_chain"));
+        manager.findState("jog").transitionTo("run").when(() -> currentState.equals("anim_chain"));
+        manager.findState("run").transitionTo("kick").when(() -> currentState.equals("anim_chain")).in(0.5f);
+        manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
 
 
     }
@@ -133,24 +100,24 @@ public class AnimAppState extends BaseAppState {
         this.currentState = currentState;
     }
 
-    private void dumpSceneGraph(Spatial n, String indent){
+    private void dumpSceneGraph(Spatial n, String indent) {
         System.err.println(indent + n.toString());
         for (int i = 0; i < n.getNumControls(); i++) {
             System.err.println(indent + "  =>" + n.getControl(i).toString());
         }
-        if(n instanceof Node){
-            Node node = (Node)n;
+        if (n instanceof Node) {
+            Node node = (Node) n;
             for (Spatial spatial : node.getChildren()) {
-                dumpSceneGraph(spatial , indent + "    ");
+                dumpSceneGraph(spatial, indent + "    ");
             }
         }
     }
 
-    public void setBlendValue(float value){
+    public void setBlendValue(float value) {
         blendSpace.setValue(value);
     }
 
-    private void dumpSkeleton(Skeleton skeleton){
+    private void dumpSkeleton(Skeleton skeleton) {
 
         for (int i = 0; i < skeleton.getBoneCount(); i++) {
             System.err.println(skeleton.getBone(i));
