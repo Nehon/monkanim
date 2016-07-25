@@ -79,6 +79,23 @@ public class AnimAppState extends BaseAppState {
 
         manager.startWith("idle");
 
+//        //Non functional and non java 8 API..
+//        AnimState state = manager.getState(ANY_STATE);
+//        if(state != null) {
+//            AnimState targetState = manager.getState("idle");
+//            if(targetState != null) {
+//                InterruptingTransition it = new InterruptingTransition(targetState);
+//                it.setTrigger(new TransitionTrigger() {
+//                    @Override
+//                    public boolean evaluate() {
+//                        return currentState.equals("idle");
+//                    }
+//                });
+//                state.addTransition(it);
+//            }
+//        }
+
+        //Functional with java 8.
         manager.findState(ANY_STATE).interruptTo("idle").when(() -> currentState.equals("idle"));
         manager.findState(ANY_STATE).interruptTo("walk").when(() -> currentState.equals("walk"));
         manager.findState(ANY_STATE).interruptTo("jog").when(() -> currentState.equals("jog"));

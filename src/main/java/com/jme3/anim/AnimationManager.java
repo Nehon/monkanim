@@ -250,10 +250,15 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         return state;
     }
 
-    public AnimState findState(String fromState) {
-        AnimState s1 = getState(fromState);
+    /**
+     * Find a state with the given name. Throws an exception if the state is not found.
+      * @param stateName
+     * @return
+     */
+    public AnimState findState(String stateName) {
+        AnimState s1 = getState(stateName);
         if(s1 == null){
-            throw new IllegalArgumentException("Cannot find state with name " + fromState);
+            throw new IllegalArgumentException("Cannot find state with name " + stateName);
         }
         return s1;
     }
