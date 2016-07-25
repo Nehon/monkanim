@@ -5,8 +5,8 @@ import com.jme3.anim.blending.LinearBlendSpace;
 import com.jme3.animation.*;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
-import com.jme3.light.DirectionalLight;
-import com.jme3.math.Vector3f;
+import com.jme3.light.*;
+import com.jme3.math.*;
 import com.jme3.scene.*;
 
 import static com.jme3.anim.AnimationManager.ANY_STATE;
@@ -26,6 +26,7 @@ public class AnimAppState extends BaseAppState {
         Node rootNode = ((SimpleApplication) app).getRootNode();
         rootNode.attachChild(s.getChild("rig"));
         rootNode.addLight(new DirectionalLight(new Vector3f(-1, -1, -1).normalizeLocal()));
+        rootNode.addLight(new DirectionalLight(new Vector3f(1, -1, 1).normalizeLocal(),new ColorRGBA(0.5f,0.5f,0.5f,1.0f)));
 
         dumpSceneGraph(rootNode, "");
 
@@ -71,6 +72,7 @@ public class AnimAppState extends BaseAppState {
         manager.createStateForSequence("jog");
         manager.createStateForSequence("kick");
         manager.createStateForSequence("run");
+        manager.createStateForSequence("wave").setMask(SkeletonMask.fromBone(skeleton, "shoulder.L"));
         manager.createStateForSequence("walk_jog_run");
         manager.createStateForSequence("walk_jog");
         manager.createStateForSequence("walk_jog_nestedRun");
@@ -82,6 +84,7 @@ public class AnimAppState extends BaseAppState {
         manager.findState(ANY_STATE).interruptTo("jog").when(() -> currentState.equals("jog"));
         manager.findState(ANY_STATE).interruptTo("kick").when(() -> currentState.equals("kick"));
         manager.findState(ANY_STATE).interruptTo("run").when(() -> currentState.equals("run"));
+        manager.findState(ANY_STATE).interruptTo("wave").when(() -> currentState.equals("wave"));
         manager.findState(ANY_STATE).interruptTo("walk_jog_run").when(() -> currentState.equals("walk_jog_run"));
         manager.findState(ANY_STATE).interruptTo("walk_jog").when(() -> currentState.equals("walk_jog"));
         manager.findState(ANY_STATE).interruptTo("walk_jog_nestedRun").when(() -> currentState.equals("walk_jog_nestedRun"));

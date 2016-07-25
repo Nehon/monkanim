@@ -68,6 +68,12 @@ public class SkeletonMask implements AnimationMask {
 
     }
 
+    public static SkeletonMask fromBone(Skeleton skeleton, String boneName){
+        SkeletonMask m = new SkeletonMask();
+        m.addFromBone(skeleton, boneName);
+        return m;
+    }
+
     private void recurseAddBone(Skeleton skeleton, Bone bone){
         affectedBones.set(skeleton.getBoneIndex(bone));
         for (Bone b : bone.getChildren()) {
