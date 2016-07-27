@@ -79,7 +79,7 @@ public class GuiAppState extends BaseAppState {
         AnimAppState animState = getState(AnimAppState.class);
         animState.setCurrentState(anim);
 
-        animState.getManager().getActiveStates().get(0).getSequence().setSpeed(speedRef.get().floatValue());
+        animState.getManager().getActiveState().getSequence().setSpeed(speedRef.get().floatValue());
 
         setAnimLabel(animState, anim);
     }
@@ -90,9 +90,9 @@ public class GuiAppState extends BaseAppState {
         if (speedRef.needsUpdate()) {
             speedLabel.setText("Speed: " + String.format("%.2f", speedRef.get()));
             AnimAppState animState = getState(AnimAppState.class);
-            animState.getManager().getActiveStates().get(0).getSequence().setSpeed(speedRef.get().floatValue());
+            animState.getManager().getActiveState().getSequence().setSpeed(speedRef.get().floatValue());
             animState.setBlendValue((speedRef.get().floatValue() - 1) / 2f);
-            String anim = animState.getManager().getActiveStates().get(0).getSequence().getName();
+            String anim = animState.getManager().getActiveState().getSequence().getName();
             setAnimLabel(animState, anim);
             speedRef.update();
         }

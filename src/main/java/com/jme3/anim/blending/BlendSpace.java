@@ -10,6 +10,6 @@ import java.util.*;
  */
 public interface BlendSpace {
 
-    void blend (List<Anim> anims, BlendingDataPool weightedAnims, float globalWeight, float time);
+    void blend (List<Anim> anims, BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask);
 
 }

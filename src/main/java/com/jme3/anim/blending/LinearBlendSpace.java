@@ -16,13 +16,13 @@ public class LinearBlendSpace implements BlendSpace {
     private float value;
 
     @Override
-    public void blend(List<Anim> animations, BlendingDataPool weightedAnims, float globalWeight, float time) {
+    public void blend(List<Anim> animations, BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask) {
         if(animations.size() == 1 || value == 0){
-            animations.get(0).resolve(weightedAnims, globalWeight, time);
+            animations.get(0).resolve(weightedAnims, globalWeight, time, mask);
             return;
         }
         if(value == 1){
-            animations.get(animations.size() - 1).resolve(weightedAnims, globalWeight, time);
+            animations.get(animations.size() - 1).resolve(weightedAnims, globalWeight, time, mask);
             return;
         }
 
@@ -31,8 +31,8 @@ public class LinearBlendSpace implements BlendSpace {
         int lowIndex = highIndex - 1;
 
 //        System.err.println(name + "x" + globalWeight + ":" + animations.get(lowIndex) +":" + ((1 - (scaledWeight - lowIndex)) * globalWeight) + ", "+ animations.get(highIndex) +":" + ((scaledWeight - lowIndex) * globalWeight));
-        animations.get(lowIndex).resolve(weightedAnims, (1 - (scaledWeight - lowIndex)) * globalWeight, time);
-        animations.get(highIndex).resolve(weightedAnims, (scaledWeight - lowIndex) * globalWeight, time);
+        animations.get(lowIndex).resolve(weightedAnims, (1 - (scaledWeight - lowIndex)) * globalWeight, time, mask);
+        animations.get(highIndex).resolve(weightedAnims, (scaledWeight - lowIndex) * globalWeight, time, mask);
     }
 
     public float getValue() {

@@ -74,11 +74,11 @@ public class AnimationSequence implements Anim {
     }
 
     @Override
-    public void resolve(BlendingDataPool weightedAnims, float globalWeight, float time){
+    public void resolve(BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask){
         if(animations.isEmpty()){
             return;
         }
-        blendSpace.blend(animations, weightedAnims, globalWeight, time);
+        blendSpace.blend(animations, weightedAnims, globalWeight, time, mask);
 
     }
 

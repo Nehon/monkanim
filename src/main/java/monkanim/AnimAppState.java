@@ -102,6 +102,7 @@ public class AnimAppState extends BaseAppState {
         manager.findState(ANY_STATE).interruptTo("kick").when(() -> currentState.equals("kick"));
         manager.findState(ANY_STATE).interruptTo("run").when(() -> currentState.equals("run"));
         manager.findState(ANY_STATE).interruptTo("wave").when(() -> currentState.equals("wave"));
+        manager.findState("wave").transitionTo("idle");
         manager.findState(ANY_STATE).interruptTo("walk_jog_run").when(() -> currentState.equals("walk_jog_run"));
         manager.findState(ANY_STATE).interruptTo("walk_jog").when(() -> currentState.equals("walk_jog"));
         manager.findState(ANY_STATE).interruptTo("walk_jog_nestedRun").when(() -> currentState.equals("walk_jog_nestedRun"));

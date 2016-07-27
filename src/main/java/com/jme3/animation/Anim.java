@@ -11,6 +11,6 @@ import java.util.*;
 public interface Anim {
 
     float getLength();
-    void resolve(BlendingDataPool weightedAnims, float globalWeight, float time);
+    void resolve(BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask);
 
 }

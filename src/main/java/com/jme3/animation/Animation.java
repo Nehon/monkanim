@@ -95,7 +95,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable, Anim {
     }
 
     @Override
-    public void resolve(BlendingDataPool weightedAnims, float globalWeight, float time) {
+    public void resolve(BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask) {
         if(globalWeight == 0){
             return;
         }
@@ -103,6 +103,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable, Anim {
         BlendingData bData = weightedAnims.getNext();
         bData.setWeight(globalWeight);
         bData.setTime(time);
+        bData.setMask(mask);
         bData.setAnimation(this);
     }
 
