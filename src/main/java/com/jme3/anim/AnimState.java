@@ -64,10 +64,10 @@ public class AnimState {
         } else {
             nextState = updateTransitions(additionnalTransitions);
         }
-        if(nextState == this) {
+        if (nextState == this) {
             //we are still on the same state, let's check for subStates.
             AnimState nextSubState = checkSubState(additonnalIntTransisions, additionnalTransitions);
-            if(nextSubState != null) {
+            if (nextSubState != null) {
                 if (nextState.getMask() == getMask()) {
                     //the sub state transitionned to the original mask meaning the parent state must transition.
                     nextState = nextSubState;
@@ -84,27 +84,28 @@ public class AnimState {
 
     /**
      * this will follow the first transition found for sub states.
+     *
      * @param additonnalIntTransisions
      * @param additionnalTransitions
      * @return
      */
-    private AnimState checkSubState(SafeArrayList<InterruptingTransition> additonnalIntTransisions,  SafeArrayList<Transition> additionnalTransitions) {
+    private AnimState checkSubState(SafeArrayList<InterruptingTransition> additonnalIntTransisions, SafeArrayList<Transition> additionnalTransitions) {
 
-            //Still on this state, let's check the substates.
-            if(subStates != null) {
-                for (Iterator<AnimState> iter = subStates.iterator(); iter.hasNext();) {
+        //Still on this state, let's check the substates.
+        if (subStates != null) {
+            for (Iterator<AnimState> iter = subStates.iterator(); iter.hasNext(); ) {
 
-                    AnimState subState = iter.next();
-                    AnimState nextState = null;
-                    nextState = subState.update(additonnalIntTransisions, additionnalTransitions);
-                    if(nextState != subState){
-                        // the sub state is done, let's remove it.
-                        iter.remove();
-                        //the sub state transitionned.
-                        return nextState;
-                    }
+                AnimState subState = iter.next();
+                AnimState nextState = null;
+                nextState = subState.update(additonnalIntTransisions, additionnalTransitions);
+                if (nextState != subState) {
+                    // the sub state is done, let's remove it.
+                    iter.remove();
+                    //the sub state transitionned.
+                    return nextState;
                 }
             }
+        }
 
         return null;
     }
@@ -151,7 +152,7 @@ public class AnimState {
         }
         float weight = 1f;
         //compute blending from previous state
-        if(incomingTransition != null && fromState != null){
+        if (incomingTransition != null && fromState != null) {
             //updating the previous sequence
             fromState.getSequence().update(tpf);
             float time = fromState.getSequence().getTime();
@@ -169,7 +170,7 @@ public class AnimState {
             fromState.getSequence().resolve(weightedAnims, 1f, time, getResolvedMask());
 
             //the transition is done, we don't need it anymore.
-            if(time > end){
+            if (time > end) {
                 incomingTransition = null;
                 fromState.getSequence().reset();
             }
@@ -179,15 +180,15 @@ public class AnimState {
         sequence.update(tpf);
         sequence.resolve(weightedAnims, weight, sequence.getTime(), getResolvedMask());
 
-        if(subStates != null) {
+        if (subStates != null) {
             for (AnimState subState : subStates) {
                 subState.resolve(weightedAnims, tpf);
             }
         }
     }
 
-    void addSubState(AnimState state){
-        if(subStates == null){
+    void addSubState(AnimState state) {
+        if (subStates == null) {
             subStates = new ArrayList<>();
         }
         subStates.add(state);
@@ -195,6 +196,7 @@ public class AnimState {
 
     /**
      * Checks all given transitions, and will return the target state of the first one for which the condition is met.
+     *
      * @param transitionsArray
      * @return
      */
@@ -213,7 +215,8 @@ public class AnimState {
                 //Saving the previous state (useful for blending and to return to a previous state.
                 newState.setFromState(this);
                 //check for masks, and add the new state as a substate if the mask is different.
-                if (getMask() != newState.getMask() && newState.getMask() != fromState.getMask()) {
+                //also, if the mask of the new state is the same as the parent, it means we are returning to a state on the same mask.
+                if (getMask() != newState.getMask() && (fromState == null || newState.getMask() != fromState.getMask())) {
                     addSubState(newState);
                     //return null the state must stay active
                     return null;
@@ -273,14 +276,14 @@ public class AnimState {
         return name;
     }
 
-    public Transition transitionTo(String targetStateName){
+    public Transition transitionTo(String targetStateName) {
         AnimState state = manager.findState(targetStateName);
         Transition transition = new Transition(state);
         addTransition(transition);
         return transition;
     }
 
-    public Transition interruptTo(String targetStateName){
+    public Transition interruptTo(String targetStateName) {
         AnimState state = manager.findState(targetStateName);
         InterruptingTransition transition = new InterruptingTransition(state);
         addTransition(transition);
@@ -290,7 +293,7 @@ public class AnimState {
     /**
      * clears the incomingTransition and the fromState (previous state)
      */
-    public void cleanup(){
+    public void cleanup() {
         fromState = null;
         incomingTransition = null;
 //        subStates.clear();
@@ -301,7 +304,7 @@ public class AnimState {
         return name;
     }
 
-    AnimationMask getResolvedMask(){
+    AnimationMask getResolvedMask() {
         return maskWrapper;
     }
 
@@ -311,7 +314,7 @@ public class AnimState {
         @Override
         public boolean isAffected(int index) {
             boolean result = mask.isAffected(index);
-            if(subStates != null){
+            if (subStates != null) {
                 for (AnimState subState : subStates) {
                     result = result && !subState.getMask().isAffected(index);
                 }
