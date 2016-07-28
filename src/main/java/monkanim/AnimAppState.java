@@ -119,7 +119,7 @@ public class AnimAppState extends BaseAppState {
         manager.findState(ANY_STATE).interruptTo("kick").when(() -> currentState.equals("anim_chain"));
         manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
         manager.findState("idle").transitionTo("kick").when(() -> currentState.equals("anim_chain"));
-        
+
 
 //
 //        for (int i = 0; i < 50; i++) {

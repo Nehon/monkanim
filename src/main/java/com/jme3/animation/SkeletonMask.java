@@ -27,17 +27,16 @@ public class SkeletonMask implements AnimationMask {
 
 
     /**
-     * returns true if the given bone index reference a bone that should be affected by the animation.
-     *
-     * @param boneIndex the index of the bone to lookup
-     * @return true if the given bone index reference a bone that should be affected by the animation.
+     * Should return the weight (0 to 1) of the given index. This represent how much the element that it reference should be affected by the animation.
+     * @param boneIndex the index to lookup in the mask
+     * @return the weight of the given index.
      */
     @Override
-    public boolean isAffected(int boneIndex) {
+    public float getWeight(int boneIndex) {
         if (affectedBones == null) {
-            return false;
+            return 1f;
         }
-        return affectedBones.get(boneIndex);
+        return affectedBones.get(boneIndex)?1f:0f;
     }
 
     /**

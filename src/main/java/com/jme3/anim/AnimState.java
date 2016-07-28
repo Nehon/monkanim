@@ -312,13 +312,14 @@ public class AnimState {
 
 
         @Override
-        public boolean isAffected(int index) {
-            boolean result = mask.isAffected(index);
+        public float getWeight(int index) {
+            float result = mask.getWeight(index);
             if (subStates != null) {
                 for (AnimState subState : subStates) {
-                    result = result && !subState.getMask().isAffected(index);
+                    result = Math.max(0f, result - subState.getMask().getWeight(index));
                 }
             }
+           // System.err.println(index + ":" + result);
             return result;
         }
     }

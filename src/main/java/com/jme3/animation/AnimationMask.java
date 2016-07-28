@@ -8,10 +8,10 @@ package com.jme3.animation;
 public interface AnimationMask {
 
     /**
-     * Should return true if the given index is not masked and the element that it reference should be affected by the animation.
+     * Should return the weight (0 to 1) of the given index. This represent how much the element that it reference should be affected by the animation.
      * @param index the index to lookup in the mask
-     * @return true if the given index is not masked.
+     * @return the weight of the given index.
      */
-    boolean isAffected(int index);
+    float getWeight(int index);
 
 }

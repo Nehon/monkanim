@@ -188,7 +188,7 @@ public final class BoneTrack implements Track {
      */
     public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
         if(mask != null) {
-            if (!mask.isAffected(targetBoneIndex)) {
+            if (mask.getWeight(targetBoneIndex) == 0f) {
                 return;
             }
         }

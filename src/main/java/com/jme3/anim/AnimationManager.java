@@ -97,8 +97,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     private Map<String, AnimationMask> masks = new HashMap<>();
     public final static AnimationMask DEFAULT_MASK = new AnimationMask() {
         @Override
-        public boolean isAffected(int index) {
-            return true;
+        public float getWeight(int index) {
+            return 1f;
         }
     };
     public final static String ANY_STATE = "Any State";
