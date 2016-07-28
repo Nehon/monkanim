@@ -691,9 +691,10 @@ public final class Bone implements Savable {
             return;
         }
 
-        if (currentWeightSum == 1){
-            return; // More than 2 transforms are being blended
-        } else if (currentWeightSum == -1 || currentWeightSum == 0) {
+//        if (currentWeightSum == 1){
+//            return; // More than 2 transforms are being blended
+//        } else
+        if (currentWeightSum == -1 || currentWeightSum == 0) {
             // Set the transform fully
             localPos.set(bindPos).addLocal(translation);
             localRot.set(bindRot).multLocal(rotation);
@@ -727,42 +728,6 @@ public final class Bone implements Savable {
             
             vars.release();
         }
-    }
-
-    public void blendAnim(Vector3f translation, Quaternion rotation, Vector3f scale, float weight) {
-        if (userControl) {
-            return;
-        }
-
-        if (weight == 0) {
-            // Do not apply this transform at all.
-            return;
-        }
-
-        // The weight is already set.
-        // Blend in the new transform.
-        TempVars vars = TempVars.get();
-
-        Vector3f tmpV = vars.vect1;
-        Vector3f tmpV2 = vars.vect2;
-        Quaternion tmpQ = vars.quat1;
-
-        tmpV.set(bindPos).addLocal(translation);
-        localPos.interpolateLocal(tmpV, weight);
-
-        tmpQ.set(bindRot).multLocal(rotation);
-        localRot.nlerp(tmpQ, weight);
-
-        if (scale != null) {
-            tmpV2.set(bindScale).multLocal(scale);
-            localScale.interpolateLocal(tmpV2, weight);
-        }
-
-        // Ensures no new weights will be blended in the future.
-        currentWeightSum = 1;
-
-        vars.release();
-
     }
 
     /**

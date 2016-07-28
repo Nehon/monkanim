@@ -2,6 +2,7 @@ package com.jme3.anim;
 
 import com.jme3.anim.blending.BlendingDataPool;
 import com.jme3.animation.AnimationMask;
+import com.jme3.math.FastMath;
 import com.jme3.util.SafeArrayList;
 
 import java.util.ArrayList;
@@ -164,10 +165,9 @@ public class AnimState {
             //note that this computes the weight of the new sequence that is currently fading in.
             weight = (time - start) / duration;
             //computing the weight of the previous sequence (1 - weight)
-            // actually no... Seems that the correct value is 1.
-            //float transitionWeight = FastMath.clamp(1f - weight, 0f, 1f);
+            float transitionWeight = FastMath.clamp(1f - weight, 0f, 1f);
             //resolving previous sequence with proper weight and time
-            fromState.getSequence().resolve(weightedAnims, 1f, time, getResolvedMask());
+            fromState.getSequence().resolve(weightedAnims, transitionWeight, time, getResolvedMask());
 
             //the transition is done, we don't need it anymore.
             if (time > end) {
