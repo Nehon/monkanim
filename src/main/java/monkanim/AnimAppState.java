@@ -108,11 +108,19 @@ public class AnimAppState extends BaseAppState {
         manager.findState(ANY_STATE).interruptTo("walk_jog_nestedRun").when(() -> currentState.equals("walk_jog_nestedRun"));
 
         //Chain
-        manager.findState(ANY_STATE).interruptTo("walk").when(() -> currentState.equals("anim_chain"));
-        manager.findState("walk").transitionTo("jog").when(() -> currentState.equals("anim_chain"));
-        manager.findState("jog").transitionTo("run").when(() -> currentState.equals("anim_chain"));
-        manager.findState("run").transitionTo("kick").when(() -> currentState.equals("anim_chain")).in(0.5f);
+//        manager.findState(ANY_STATE).interruptTo("walk").when(() -> currentState.equals("anim_chain"));
+//        manager.findState("walk").transitionTo("jog").when(() -> currentState.equals("anim_chain"));
+//        manager.findState("jog").transitionTo("run").when(() -> currentState.equals("anim_chain"));
+//        manager.findState("run").transitionTo("kick").when(() -> currentState.equals("anim_chain")).in(0.5f);
+//        manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
+
+
+        //Chain
+        manager.findState(ANY_STATE).interruptTo("kick").when(() -> currentState.equals("anim_chain"));
         manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
+        manager.findState("idle").transitionTo("kick").when(() -> currentState.equals("anim_chain"));
+        
+
 //
 //        for (int i = 0; i < 50; i++) {
 //            Spatial sp = rig.clone();
