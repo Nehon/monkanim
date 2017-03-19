@@ -8,6 +8,7 @@ import com.jme3.app.state.BaseAppState;
 import com.jme3.light.*;
 import com.jme3.math.*;
 import com.jme3.scene.*;
+import com.jme3.util.clone.Cloner;
 
 import static com.jme3.anim.AnimationManager.ANY_STATE;
 
@@ -24,30 +25,25 @@ public class AnimAppState extends BaseAppState {
     protected void initialize(Application app) {
         Node s = (Node) app.getAssetManager().loadModel("Models/puppet.xbuf");
         Node rootNode = ((SimpleApplication) app).getRootNode();
-        rootNode.attachChild(s.getChild("rig"));
+        Spatial rig = s.getChild("rig");
         rootNode.addLight(new DirectionalLight(new Vector3f(-1, -1, -1).normalizeLocal()));
         rootNode.addLight(new DirectionalLight(new Vector3f(1, -1, 1).normalizeLocal(),new ColorRGBA(0.5f,0.5f,0.5f,1.0f)));
 
-        dumpSceneGraph(rootNode, "");
+        // dumpSceneGraph(rootNode, "");
 
-        Spatial rig = rootNode.getChild("rig");
+
         AnimControl control = rig.getControl(AnimControl.class);
-//        AnimChannel channel = control.createChannel();
-//        channel.setAnim("walk");
-//        channel.setSpeed(1);
-//        channel.setLoopMode(LoopMode.Loop);
 
-        //create an AnnimationManager from an AnimController. This also createa a sequence for each animation
+        //create an AnimationManager from an AnimController.
         manager = AnimMigrationUtil.fromAnimControl(control);
 
         //removing old stuff and adding new stuff
         SkeletonControl skelControl = rig.getControl(SkeletonControl.class);
         Skeleton skeleton = skelControl.getSkeleton();
-        System.err.println(skeleton.getBone(0));
+//System.err.println(skeleton.getBone(0));
         rig.removeControl(AnimControl.class);
         rig.removeControl(SkeletonControl.class);
 
-        //Bone b = skelControl.getSkeleton().getBone("Foot_Roll.R");
         rig.addControl(manager);
         rig.addControl(skelControl);
 
@@ -90,13 +86,12 @@ public class AnimAppState extends BaseAppState {
         manager.findState(ANY_STATE).interruptTo("walk_jog_nestedRun").when(() -> currentState.equals("walk_jog_nestedRun"));
 
         //Special case, when the wave state ends, it will return to "anystate", in that case the state from which wave was triggered
-        //Foexample if you go from walk to wave, when wave ends, it will transition bac to walk.
+        //For example if you go from walk to wave, when wave ends, it will transition back to walk.
         manager.findState("wave").transitionTo(ANY_STATE);
 
         manager.findState(ANY_STATE).interruptTo("waveLayer").when(() -> currentState.equals("waveLayer"));
         //Here again a special case if a layered state transition back to ANY_STATE, if will just fade out to the previous layer.
         manager.findState("waveLayer").transitionTo(ANY_STATE);
-
 
         //A chain of states that will go on while currentState is "anim_chain"
         manager.findState(ANY_STATE).interruptTo("walk").when(() -> currentState.equals("anim_chain"));
@@ -106,20 +101,12 @@ public class AnimAppState extends BaseAppState {
         manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
 
 
-        //Chain
-//        manager.findState(ANY_STATE).interruptTo("kick").when(() -> currentState.equals("anim_chain"));
-//        manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
-//        manager.findState("idle").transitionTo("kick").when(() -> currentState.equals("anim_chain"));
+//        Cloner cloner = new Cloner();
+//        Spatial clonedRig = cloner.clone(rig);
+//        rootNode.attachChild(clonedRig);
+//        manager = clonedRig.getControl(AnimationManager.class);
 
-
-//
-//        for (int i = 0; i < 50; i++) {
-//            Spatial sp = rig.clone();
-//            rootNode.attachChild(sp);
-//            sp.move(i,0,0);
-//        }
-
-
+        rootNode.attachChild(rig);
     }
 
     public void setCurrentState(String currentState) {

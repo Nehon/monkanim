@@ -5,13 +5,15 @@ import com.jme3.animation.Anim;
 import com.jme3.animation.AnimationMask;
 import com.jme3.math.FastMath;
 import com.jme3.util.SafeArrayList;
+import com.jme3.util.clone.Cloner;
+import com.jme3.util.clone.JmeCloneable;
 
 import java.util.List;
 
 /**
  * Created by Nehon on 13/07/2016.
  */
-public class AnimState implements Anim {
+public class AnimState implements Anim, Cloneable, JmeCloneable {
 
     private String name;
     private AnimationLayer layer;
@@ -392,5 +394,34 @@ public class AnimState implements Anim {
 
     public float getSpeed() {
         return speed;
+    }
+
+    @Override
+    public Object jmeClone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Can't clone AnimationLayer");
+        }
+    }
+
+    @Override
+    public void cloneFields(Cloner cloner, Object original) {
+        AnimState state = (AnimState) original;
+        this.layer = cloner.clone(state.getLayer());
+        this.blendSpace = state.blendSpace;
+
+        this.animations = new SafeArrayList<>(Anim.class);
+        for (Anim animation : state.animations) {
+            this.animations.add(cloner.clone(animation));
+        }
+        this.transitions = new SafeArrayList<>(Transition.class);
+        for (Transition transition : state.transitions) {
+            this.transitions.add(cloner.clone(transition));
+        }
+        this.interruptingTransitions = new SafeArrayList<>(InterruptingTransition.class);
+        for (InterruptingTransition transition : state.interruptingTransitions) {
+            this.interruptingTransitions.add(cloner.clone(transition));
+        }
     }
 }

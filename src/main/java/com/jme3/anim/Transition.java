@@ -1,9 +1,12 @@
 package com.jme3.anim;
 
+import com.jme3.util.clone.Cloner;
+import com.jme3.util.clone.JmeCloneable;
+
 /**
  * Created by Nehon on 13/07/2016.
  */
-public class Transition {
+public class Transition implements Cloneable, JmeCloneable {
 
     public final static float DEFAULT_BLEND_DURATION = 0.4f;
 
@@ -80,5 +83,21 @@ public class Transition {
     public Transition in(float duration){
         setDuration(duration);
         return this;
+    }
+
+    @Override
+    public Object jmeClone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Can't clone AnimationLayer");
+        }
+    }
+
+    @Override
+    public void cloneFields(Cloner cloner, Object original) {
+        Transition transition = (Transition) original;
+        this.targetState = cloner.clone(transition.targetState);
+        this.trigger = transition.trigger;
     }
 }

@@ -142,6 +142,7 @@ public final class AnimControl extends AbstractControl implements Cloneable, Jme
         AnimControl clone = (AnimControl) super.jmeClone();
         clone.channels = new ArrayList<AnimChannel>();
         clone.listeners = new ArrayList<AnimEventListener>();
+        clone.metaData = new AnimationMetaData();
 
         return clone;
     }     

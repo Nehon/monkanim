@@ -50,10 +50,10 @@ import java.util.Map.Entry;
  * <p>
  * The manager currently supports:
  * 1) Animation blending and animation transitions (with blending)
- * 2) Multiple animation mask //TODO not yet actually...
+ * 2) Multiple animation layers
  * 3) Multiple skins
  * 4) Animation event listeners //TODO I hope it won't...but I guess I'll have to do something similar
- * 5) Animated model cloning //TODO not anymore...have to faix it
+ * 5) Animated model cloning //TODO not anymore...have to fix it
  * 6) Animated model binary import/export //TODO not anymore...have to fix it
  * 7) Hardware skinning
  * 8) Attachments
@@ -71,7 +71,6 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * the global speed of the motion
      */
     private float globalSpeed = 1.0f;
-
     /**
      * List of animations
      */
@@ -90,15 +89,20 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     /**
      * Animation mask list, that holdw all the masks used by this animation manager.
      */
-    public final static AnimationLayer DEFAULT_LAYER = new AnimationLayer();
-    public final static String ANY_STATE = "Any State";
-    private final AnimState anyState = new AnimState(ANY_STATE, this);
+    public AnimationLayer defaultLayer = new AnimationLayer();
 
+    /**
+     * The any state name
+     */
+    public final static String ANY_STATE = "Any State";
+    /**
+     * The anyState, not a proper state but used as dummy
+     */
+    private AnimState anyState = new AnimState(ANY_STATE, this);
     /**
      * the list of all states of this Animation manager.
      */
     private Map<String, AnimState> states = new HashMap<>();
-
     /**
      * Animation event listeners - This I hope to get rid of....
      */
@@ -111,8 +115,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @param skeleton The skeleton to animate
      */
     public AnimationManager(Skeleton skeleton) {
-        layers.put(DEFAULT_LAYER.getName(), DEFAULT_LAYER);
-        DEFAULT_LAYER.setWeight(1f);
+        layers.put(defaultLayer.getName(), defaultLayer);
+        defaultLayer.setWeight(1f);
         this.metaData.setSkeleton(skeleton);
 
         AnimationLayer dummyLayer = new AnimationLayer("dummy");
@@ -129,36 +133,43 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
     @Override
     public Object jmeClone() {
-        //TODO fix the clone
         AnimationManager clone = (AnimationManager) super.jmeClone();
         clone.parameters = new HashMap<>();
         clone.states = new HashMap<>();
         clone.layers = new TreeMap<>();
         clone.listeners = new ArrayList<>();
-
+        clone.metaData = new AnimationMetaData();
+        clone.weightedAnims = new BlendingDataPool();
         return clone;
     }
 
     @Override
     public void cloneFields(Cloner cloner, Object original) {
-        //TODO fix the cloneFields
         super.cloneFields(cloner, original);
+        AnimationManager manager = (AnimationManager) original;
 
-        this.metaData.setSkeleton(cloner.clone(((AnimationManager) original).metaData.getSkeleton()));
+        this.metaData.setSkeleton(cloner.clone(manager.metaData.getSkeleton()));
+        this.metaData.setSpatial(cloner.clone(manager.metaData.getSpatial()));
 
-        for (Entry<String, Object> paramEntry : parameters.entrySet()) {
-            this.parameters.put(paramEntry.getKey(), paramEntry.getValue());
+        this.anyState = cloner.clone(manager.anyState);
+
+        this.defaultLayer = cloner.clone(manager.defaultLayer);
+
+        for (Entry<String, Object> paramEntry : manager.parameters.entrySet()) {
+            this.parameters.put(paramEntry.getKey(), cloner.clone(paramEntry.getValue()));
         }
 
-        for (Entry<String, AnimState> animEntry : states.entrySet()) {
-            this.states.put(animEntry.getKey(), animEntry.getValue());
+
+        for (Entry<String, AnimationLayer> paramEntry : manager.layers.entrySet()) {
+            this.layers.put(paramEntry.getKey(), cloner.clone(paramEntry.getValue()));
         }
 
-        for (Entry<String, AnimationLayer> paramEntry : layers.entrySet()) {
-            this.layers.put(paramEntry.getKey(), paramEntry.getValue());
+        for (Entry<String, AnimState> stateEntry : manager.states.entrySet()) {
+            AnimState state = cloner.clone(stateEntry.getValue());
+            state.setManager(this);
+            this.states.put(stateEntry.getKey(), state);
         }
 
-        // Note cloneForSpatial() never actually cloned the animation map... just its reference
         HashMap<String, Animation> newMap = new HashMap<>();
 
         // animationMap is cloned, but only ClonableTracks will be cloned as they need a reference to a cloned spatial
@@ -194,14 +205,14 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
 
         states.put(stateName, state);
-        state.setLayer(DEFAULT_LAYER);
+        state.setLayer(defaultLayer);
         return state;
     }
 
     public AnimState createState(String stateName) {
         AnimState state = new AnimState(stateName, this);
         states.put(stateName, state);
-        state.setLayer(DEFAULT_LAYER);
+        state.setLayer(defaultLayer);
         return state;
     }
 
@@ -263,7 +274,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      */
     //TODO this is not really great as it just set the state as the active states... using this while the animation is playing would just be weird...
     public void startWith(String state) {
-        DEFAULT_LAYER.setActiveState(findState(state));
+        defaultLayer.setActiveState(findState(state));
     }
 
 
@@ -426,7 +437,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
             if (layer.getActiveState() != newState) {
                 if (newState == anyState) {
 
-                    if (layer == DEFAULT_LAYER) {
+                    if (layer == defaultLayer) {
                         //special case if we are on the default layer, use the fromState of the state
                         newState = layer.getActiveState().getFromState();
                         newState.setFromState(layer.getActiveState());

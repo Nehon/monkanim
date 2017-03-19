@@ -1,11 +1,13 @@
 package com.jme3.anim;
 
 import com.jme3.animation.AnimationMask;
+import com.jme3.util.clone.Cloner;
+import com.jme3.util.clone.JmeCloneable;
 
 /**
  * Created by Nehon on 15/03/2017.
  */
-public class AnimationLayer implements AnimationMask {
+public class AnimationLayer implements AnimationMask, Cloneable, JmeCloneable {
 
     private float weight = 0f;
     private String name = "default";
@@ -84,4 +86,22 @@ public class AnimationLayer implements AnimationMask {
     public float getWeight(int index) {
         return (mask == null ? 1f : mask.getWeight(index)) * (weight - (nextLayer == null ? 0f : nextLayer.getWeight(index)));
     }
+
+    @Override
+    public Object jmeClone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Can't clone AnimationLayer");
+        }
+    }
+
+    @Override
+    public void cloneFields(Cloner cloner, Object original) {
+        AnimationLayer layer = (AnimationLayer) original;
+        //we can share the mask it should be stateless.
+        this.mask = layer.mask;
+        this.activeState = cloner.clone(activeState);
+    }
+
 }
