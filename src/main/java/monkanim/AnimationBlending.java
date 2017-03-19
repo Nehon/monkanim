@@ -8,6 +8,7 @@ import com.jme3.renderer.RenderManager;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.style.BaseStyles;
 import jme3_ext_xbuf.XbufLoader;
+import utils.EraseTimer;
 
 /**
  * test
@@ -31,6 +32,7 @@ public class AnimationBlending extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        setTimer(new EraseTimer());
 
         setPauseOnLostFocus(false);
 

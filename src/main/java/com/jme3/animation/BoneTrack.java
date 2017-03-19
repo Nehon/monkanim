@@ -188,11 +188,13 @@ public final class BoneTrack implements Track {
      */
     public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
         if(mask != null) {
-            if (mask.getWeight(targetBoneIndex) == 0f) {
+            float maskWeight = mask.getWeight(targetBoneIndex);
+            if (maskWeight == 0f) {
                 return;
             }
+            weight *= maskWeight;
         }
-        
+
         Bone target = metaData.getSkeleton().getBone(targetBoneIndex);
 
         Vector3f tempV = vars.vect1;

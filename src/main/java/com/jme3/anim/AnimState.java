@@ -1,38 +1,38 @@
 package com.jme3.anim;
 
-import com.jme3.anim.blending.BlendingDataPool;
+import com.jme3.anim.blending.*;
+import com.jme3.animation.Anim;
 import com.jme3.animation.AnimationMask;
 import com.jme3.math.FastMath;
 import com.jme3.util.SafeArrayList;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
  * Created by Nehon on 13/07/2016.
  */
-public class AnimState {
+public class AnimState implements Anim {
 
     private String name;
-    private AnimationSequence sequence;
-    private AnimationMask mask;
+    private AnimationLayer layer;
     private Transition incomingTransition;
     private AnimState fromState;
-    private List<AnimState> subStates;
     private AnimationManager manager;
-    private MaskWrapper maskWrapper = new MaskWrapper();
-
     private SafeArrayList<Transition> transitions = new SafeArrayList<>(Transition.class);
     private SafeArrayList<InterruptingTransition> interruptingTransitions = new SafeArrayList<>(InterruptingTransition.class);
+
+    private float time;
+    private float speed = 1;
+    private float length = 0;
+    private BlendSpace blendSpace = new LinearBlendSpace();
+
+    private List<Anim> animations = new SafeArrayList<>(Anim.class);
 
     /**
      * Serialization only
      */
     public AnimState() {
-
     }
-
 
     AnimState(String name, AnimationManager manager) {
         this.name = name;
@@ -55,63 +55,32 @@ public class AnimState {
         interruptingTransitions.remove(transition);
     }
 
-    public AnimState update(SafeArrayList<InterruptingTransition> additonnalIntTransisions, SafeArrayList<Transition> additionnalTransitions) {
-
-        AnimState nextState = null;
-
-
-        if (sequence != null && !sequence.isFinished()) {
-            nextState = updateInterruptingTransitions(additonnalIntTransisions);
-        } else {
-            nextState = updateTransitions(additionnalTransitions);
-        }
-        if (nextState == this) {
-            //we are still on the same state, let's check for subStates.
-            AnimState nextSubState = checkSubState(additonnalIntTransisions, additionnalTransitions);
-            if (nextSubState != null) {
-                if (nextState.getMask() == getMask()) {
-                    //the sub state transitionned to the original mask meaning the parent state must transition.
-                    nextState = nextSubState;
-
-                } else {
-                    //the sub state transitionned to another sub state
-                    addSubState(nextSubState);
-                }
-            }
-        }
-
-        return nextState;
-    }
-
     /**
-     * this will follow the first transition found for sub states.
+     * Will check all transitions and find the new state if relevant.
      *
      * @param additonnalIntTransisions
      * @param additionnalTransitions
      * @return
      */
-    private AnimState checkSubState(SafeArrayList<InterruptingTransition> additonnalIntTransisions, SafeArrayList<Transition> additionnalTransitions) {
+    public AnimState signal(SafeArrayList<InterruptingTransition> additonnalIntTransisions, SafeArrayList<Transition> additionnalTransitions) {
 
-        //Still on this state, let's check the substates.
-        if (subStates != null) {
-            for (Iterator<AnimState> iter = subStates.iterator(); iter.hasNext(); ) {
+        AnimState nextState = null;
 
-                AnimState subState = iter.next();
-                AnimState nextState = null;
-                nextState = subState.update(additonnalIntTransisions, additionnalTransitions);
-                if (nextState != subState) {
-                    // the sub state is done, let's remove it.
-                    iter.remove();
-                    //the sub state transitionned.
-                    return nextState;
-                }
-            }
+        if (!isFinished()) {
+            nextState = checkInterruptingTransitions(additonnalIntTransisions);
+        } else {
+            nextState = checkTransitions(additionnalTransitions);
         }
-
-        return null;
+        //TODO check for layers and perform layer blending if relevant
+        return nextState;
     }
 
-    private AnimState updateTransitions(SafeArrayList<Transition> additionnalTransitions) {
+    /**
+     * Checks classic transitions (when the state comes to an end)
+     * @param additionnalTransitions
+     * @return
+     */
+    private AnimState checkTransitions(SafeArrayList<Transition> additionnalTransitions) {
         //the sequence has finished, let's check the transitions
         AnimState nextState = checkTransitionsForNextState(transitions.getArray());
         if (nextState != null) {
@@ -123,15 +92,18 @@ public class AnimState {
         if (nextState != null) {
             return nextState;
         }
-        //no available transition, let's loop the sequence.
-        //and keep the same state.
-        if (sequence != null) {
-            sequence.reset();
-        }
+        //no available transition, let's loop the state.
+        reset();
         return this;
     }
 
-    private AnimState updateInterruptingTransitions(SafeArrayList<InterruptingTransition> additonnalIntTransisions) {
+    /**
+     * Checks interrupting transition (some event occurred that required this state to transition)
+     *
+     * @param additonnalIntTransisions
+     * @return
+     */
+    private AnimState checkInterruptingTransitions(SafeArrayList<InterruptingTransition> additonnalIntTransisions) {
         //sequence is playing, but can be interrupted by an interrupting transition.
         AnimState nextState = checkTransitionsForNextState(interruptingTransitions.getArray());
         if (nextState != null) {
@@ -147,51 +119,98 @@ public class AnimState {
         return this;
     }
 
-    public void resolve(BlendingDataPool weightedAnims, float tpf) {
-        if (sequence == null) {
-            return;
-        }
+    /**
+     * Updating the state
+     *
+     * @param weightedAnims
+     * @param tpf
+     */
+    public void update(BlendingDataPool weightedAnims, float tpf) {
         float weight = 1f;
         //compute blending from previous state
         if (incomingTransition != null && fromState != null) {
-            //updating the previous sequence
-            fromState.getSequence().update(tpf);
-            float time = fromState.getSequence().getTime();
-            float start = Math.min(incomingTransition.getFromTime(), fromState.getSequence().getLength());
+            //updating the previous state
+            //we want to do it only if the sate was on the same layer (regular case)
+            //And also when fading out a state from a higher layer.
+            if (fromState.getLayer() == layer || fromState.getLayer().getIndex() > layer.getIndex()) {
+                fromState.updateTime(tpf);
+            }
+            float time = fromState.getTime();
+            float start = Math.min(incomingTransition.getFromTime(), fromState.getLength());
+            //depending on the time we set the transition, start time can be > to time, which leads to a negative weight
+            //here we ensure start is always below time
+            while (start > time) {
+                start -= fromState.getLength();
+            }
+
             float end = start + incomingTransition.getDuration();
             float duration = incomingTransition.getDuration();
 
             //computing the weight
             //note that this computes the weight of the new sequence that is currently fading in.
             weight = (time - start) / duration;
+
+//System.err.println(fromState.getName() + " to " + getName() + ": " + weight);
+
+            weight = FastMath.clamp(weight, 0f, 1f);
             //computing the weight of the previous sequence (1 - weight)
-            float transitionWeight = FastMath.clamp(1f - weight, 0f, 1f);
-            //resolving previous sequence with proper weight and time
-            fromState.getSequence().resolve(weightedAnims, transitionWeight, time, getResolvedMask());
+            float transitionWeight = 1f - weight;
+
+            //Check if we are on the same layer
+            if (fromState.getLayer() != layer) {
+                //we are fading between layers. Layers will handle the transition and anims weight will be reset to 1
+                if (fromState.getLayer().getIndex() < layer.getIndex()) {
+                    //fading IN
+                    //Note that the weight of the previous layer doesn't change
+                    //the fading in layer
+                    layer.setWeight(weight);
+                } else {
+                    //fading OUT
+                    fromState.getLayer().setWeight(transitionWeight);
+                    // resolve the state with 1.0 weight, once again blending is done in the layer.
+                    fromState.resolve(weightedAnims, 1.0f, time, fromState.getLayer());
+                }
+                //reset the weight, blending is handled by layers here
+                weight = 1;
+            } else {
+                //resolving previous sequence with proper weight and time
+                fromState.resolve(weightedAnims, transitionWeight, time, fromState.getLayer());
+            }
+
 
             //the transition is done, we don't need it anymore.
             if (time > end) {
                 incomingTransition = null;
-                fromState.getSequence().reset();
+                //if we are on the same layer the previous state is done.
+                //if the layer are different the previous state will continue to be updated.
+                if (layer == fromState.getLayer() || layer.getIndex() < fromState.getLayer().getIndex()) {
+                    fromState.reset();
+//System.err.println(" ---------------------------- ");
+//System.err.println(fromState.getName() + " reset");
+//System.err.println(" ---------------------------- ");
+                    if (layer.getIndex() < fromState.getLayer().getIndex()) {
+                        fromState.getLayer().setActiveState(null);
+                    }
+                }
             }
         }
 
-        //resolving and updating this state's sequence.
-        sequence.update(tpf);
-        sequence.resolve(weightedAnims, weight, sequence.getTime(), getResolvedMask());
+        //resolving and updating this state's anims.
+        updateTime(tpf);
+        resolve(weightedAnims, weight, time, getLayer());
 
-        if (subStates != null) {
-            for (AnimState subState : subStates) {
-                subState.resolve(weightedAnims, tpf);
-            }
-        }
     }
 
-    void addSubState(AnimState state) {
-        if (subStates == null) {
-            subStates = new ArrayList<>();
+    private void updateTime(float tpf) {
+        time += tpf * speed;
+    }
+
+    public AnimState forAnims(String... animNames) {
+        for (String animName : animNames) {
+            Anim clip = manager.getClip(animName);
+            addAnimation(clip);
         }
-        subStates.add(state);
+        return this;
     }
 
     /**
@@ -208,19 +227,12 @@ public class AnimState {
             if (transition.evaluateTrigger()) {
                 //the condition is met, let prepare and return the new state
                 AnimState newState = transition.getTargetState();
-                //for blending, we save the sequand current time in the transition
-                transition.setFromTime(sequence.getTime());
+                //for blending, we save the sequence current time in the transition
+                transition.setFromTime(time);
                 //saving the transition into the new state
                 newState.setIncomingTransition(transition);
                 //Saving the previous state (useful for blending and to return to a previous state.
                 newState.setFromState(this);
-                //check for masks, and add the new state as a substate if the mask is different.
-                //also, if the mask of the new state is the same as the parent, it means we are returning to a state on the same mask.
-                if (getMask() != newState.getMask() && (fromState == null || newState.getMask() != fromState.getMask())) {
-                    addSubState(newState);
-                    //return null the state must stay active
-                    return null;
-                }
                 //return the new state
                 return newState;
             }
@@ -229,19 +241,24 @@ public class AnimState {
     }
 
     public AnimationMask getMask() {
-        return mask;
+        return layer;
     }
 
-    public void setMask(AnimationMask mask) {
-        this.mask = mask;
+    public AnimationLayer getLayer() {
+        return layer;
     }
 
-    public void setSequence(AnimationSequence sequence) {
-        this.sequence = sequence;
+    public void setLayer(AnimationLayer layer) {
+        this.layer = layer;
     }
 
-    public AnimationSequence getSequence() {
-        return sequence;
+    public AnimState onLayer(String name) {
+        AnimationLayer layer = manager.getLayer(name);
+        if (layer == null) {
+            throw new IllegalArgumentException("Cannot find layer with name " + name);
+        }
+        setLayer(layer);
+        return this;
     }
 
     public SafeArrayList<InterruptingTransition> getInterruptingTransitions() {
@@ -296,7 +313,6 @@ public class AnimState {
     public void cleanup() {
         fromState = null;
         incomingTransition = null;
-//        subStates.clear();
     }
 
     @Override
@@ -304,23 +320,77 @@ public class AnimState {
         return name;
     }
 
-    AnimationMask getResolvedMask() {
-        return maskWrapper;
+    public void addAnimation(Anim animation) {
+        animations.add(animation);
+        if (animation.getLength() > length) {
+            length = animation.getLength();
+        }
     }
 
-    private class MaskWrapper implements AnimationMask {
-
-
-        @Override
-        public float getWeight(int index) {
-            float result = mask.getWeight(index);
-            if (subStates != null) {
-                for (AnimState subState : subStates) {
-                    result = Math.max(0f, result - subState.getMask().getWeight(index));
-                }
-            }
-           // System.err.println(index + ":" + result);
-            return result;
+    public void addAnimations(Anim... animations) {
+        for (Anim animation : animations) {
+            addAnimation(animation);
         }
+    }
+
+    public void removeAnimation(Anim animation) {
+        animations.remove(animation);
+        //recompute length
+        length = 0;
+        for (Anim anim : animations) {
+            if (anim.getLength() > length) {
+                length = anim.getLength();
+            }
+        }
+    }
+
+    @Override
+    public float getLength() {
+        return length;
+    }
+
+    @Override
+    public void resolve(BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask) {
+        if (animations.isEmpty()) {
+            return;
+        }
+        blendSpace.blend(animations, weightedAnims, globalWeight, time, mask);
+    }
+
+    public BlendSpace getBlendSpace() {
+        return blendSpace;
+    }
+
+    public boolean isFinished() {
+        return time >= length;
+    }
+
+    public void setBlendSpace(BlendSpace blendSpace) {
+        this.blendSpace = blendSpace;
+    }
+
+    public AnimState withBlendSpace(BlendSpace blendSpace) {
+        setBlendSpace(blendSpace);
+        return this;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void reset() {
+        time = 0;
+    }
+
+    public float getTime() {
+        return time;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public float getSpeed() {
+        return speed;
     }
 }

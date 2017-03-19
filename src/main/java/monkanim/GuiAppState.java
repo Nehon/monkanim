@@ -53,9 +53,9 @@ public class GuiAppState extends BaseAppState {
         buttonContainer.setLocalTranslation(100, 500, 0);
 
         AnimAppState animState = getState(AnimAppState.class);
-        for (AnimationSequence sequence : animState.getManager().getSequences()) {
-            Button button = buttonContainer.addChild(new Button(sequence.getName()));
-            button.addClickCommands((Button source) -> setAnim(sequence.getName()));
+        for (AnimState state : animState.getManager().getStates()) {
+            Button button = buttonContainer.addChild(new Button(state.getName()));
+            button.addClickCommands((Button source) -> setAnim(state.getName()));
         }
         Button button = buttonContainer.addChild(new Button("anim chain"));
         button.addClickCommands((Button source) -> setAnim("anim_chain"));
@@ -79,7 +79,11 @@ public class GuiAppState extends BaseAppState {
         AnimAppState animState = getState(AnimAppState.class);
         animState.setCurrentState(anim);
 
-        animState.getManager().getActiveState().getSequence().setSpeed(speedRef.get().floatValue());
+        animState.getManager().getLayers().forEach((name, layer) -> {
+            if (layer.getActiveState() != null) {
+                layer.getActiveState().setSpeed(speedRef.get().floatValue());
+            }
+        });
 
         setAnimLabel(animState, anim);
     }
@@ -90,10 +94,19 @@ public class GuiAppState extends BaseAppState {
         if (speedRef.needsUpdate()) {
             speedLabel.setText("Speed: " + String.format("%.2f", speedRef.get()));
             AnimAppState animState = getState(AnimAppState.class);
-            animState.getManager().getActiveState().getSequence().setSpeed(speedRef.get().floatValue());
+            animState.getManager().getLayers().forEach((name, layer) -> {
+                if (layer.getActiveState() != null) {
+                    layer.getActiveState().setSpeed(speedRef.get().floatValue());
+                }
+            });
             animState.setBlendValue((speedRef.get().floatValue() - 1) / 2f);
-            String anim = animState.getManager().getActiveState().getSequence().getName();
-            setAnimLabel(animState, anim);
+            StringBuilder anim = new StringBuilder();
+            animState.getManager().getLayers().forEach((name, layer) -> {
+                if (layer.getActiveState() != null) {
+                    anim.append(layer.getActiveState().getName()).append(" ");
+                }
+            });
+            setAnimLabel(animState, anim.toString());
             speedRef.update();
         }
 

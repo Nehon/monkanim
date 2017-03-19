@@ -48,34 +48,23 @@ public class AnimAppState extends BaseAppState {
         rig.removeControl(SkeletonControl.class);
 
         //Bone b = skelControl.getSkeleton().getBone("Foot_Roll.R");
-
-
         rig.addControl(manager);
         rig.addControl(skelControl);
 
-
-        //Creating a blending sequence between walk, jog and run
-        AnimationSequence sequence = manager.createAnimationSequence("walk_jog_run", "walk", "jog", "run");
-        sequence.setBlendSpace(blendSpace);
-
-        //Creating a blending sequence between several sequences
-        AnimationSequence seq = manager.createAnimationSequence("walk_jog", "walk", "jog");
-        ((LinearBlendSpace) seq.getBlendSpace()).setValue(0.5f);
-        sequence = manager.createAnimationSequence("walk_jog_nestedRun", "walk_jog", "run");
-        sequence.setBlendSpace(blendSpace);
-
-        //TODO sequence and states could be the same thing actually... merging them would simplify the API without too much clutter of code.
+        //layers
+        manager.addLayer("wave").withMask(SkeletonMask.fromBone(skeleton, "shoulder.L"));
 
         //state machine
-        manager.createStateForSequence("idle");
-        manager.createStateForSequence("walk");
-        manager.createStateForSequence("jog");
-        manager.createStateForSequence("kick");
-        manager.createStateForSequence("run");
-        manager.createStateForSequence("wave").setMask(SkeletonMask.fromBone(skeleton, "shoulder.L"));
-        manager.createStateForSequence("walk_jog_run");
-        manager.createStateForSequence("walk_jog");
-        manager.createStateForSequence("walk_jog_nestedRun");
+        manager.createState("idle").forAnims("idle");
+        manager.createState("walk").forAnims("walk");
+        manager.createState("jog").forAnims("jog");
+        manager.createState("kick").forAnims("kick");
+        manager.createState("run").forAnims("run");
+        manager.createState("wave").forAnims("wave");
+        manager.createState("waveLayer").forAnims("wave").onLayer("wave");
+        manager.createState("walk_jog_run").forAnims("walk", "jog", "run").withBlendSpace(blendSpace);
+        ((LinearBlendSpace) (manager.createState("walk_jog").forAnims("walk", "jog").getBlendSpace())).setValue(0.5f);
+        manager.createState("walk_jog_nestedRun").forAnims("walk_jog", "run").withBlendSpace(blendSpace);
 
         manager.startWith("idle");
 
@@ -102,23 +91,25 @@ public class AnimAppState extends BaseAppState {
         manager.findState(ANY_STATE).interruptTo("kick").when(() -> currentState.equals("kick"));
         manager.findState(ANY_STATE).interruptTo("run").when(() -> currentState.equals("run"));
         manager.findState(ANY_STATE).interruptTo("wave").when(() -> currentState.equals("wave"));
-        manager.findState("wave").transitionTo("idle");
+        manager.findState("wave").transitionTo(ANY_STATE);
+        manager.findState(ANY_STATE).interruptTo("waveLayer").when(() -> currentState.equals("waveLayer"));
+        manager.findState("waveLayer").transitionTo(ANY_STATE);
         manager.findState(ANY_STATE).interruptTo("walk_jog_run").when(() -> currentState.equals("walk_jog_run"));
         manager.findState(ANY_STATE).interruptTo("walk_jog").when(() -> currentState.equals("walk_jog"));
         manager.findState(ANY_STATE).interruptTo("walk_jog_nestedRun").when(() -> currentState.equals("walk_jog_nestedRun"));
 
         //Chain
-//        manager.findState(ANY_STATE).interruptTo("walk").when(() -> currentState.equals("anim_chain"));
-//        manager.findState("walk").transitionTo("jog").when(() -> currentState.equals("anim_chain"));
-//        manager.findState("jog").transitionTo("run").when(() -> currentState.equals("anim_chain"));
-//        manager.findState("run").transitionTo("kick").when(() -> currentState.equals("anim_chain")).in(0.5f);
-//        manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
+        manager.findState(ANY_STATE).interruptTo("walk").when(() -> currentState.equals("anim_chain"));
+        manager.findState("walk").transitionTo("jog").when(() -> currentState.equals("anim_chain"));
+        manager.findState("jog").transitionTo("run").when(() -> currentState.equals("anim_chain"));
+        manager.findState("run").transitionTo("kick").when(() -> currentState.equals("anim_chain")).in(0.5f);
+        manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
 
 
         //Chain
-        manager.findState(ANY_STATE).interruptTo("kick").when(() -> currentState.equals("anim_chain"));
-        manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
-        manager.findState("idle").transitionTo("kick").when(() -> currentState.equals("anim_chain"));
+//        manager.findState(ANY_STATE).interruptTo("kick").when(() -> currentState.equals("anim_chain"));
+//        manager.findState("kick").transitionTo("idle").when(() -> currentState.equals("anim_chain"));
+//        manager.findState("idle").transitionTo("kick").when(() -> currentState.equals("anim_chain"));
 
 
 //

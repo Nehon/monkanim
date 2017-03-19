@@ -24,7 +24,6 @@ public class AnimMigrationUtil {
         for (String name : control.getAnimationNames()) {
             Animation anim = control.getAnim(name);
             manager.addAnimation(anim);
-            manager.createAnimationSequence(name, name);
         }
 
         return manager;

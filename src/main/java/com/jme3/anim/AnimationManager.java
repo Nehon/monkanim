@@ -53,7 +53,7 @@ import java.util.Map.Entry;
  * 2) Multiple animation mask //TODO not yet actually...
  * 3) Multiple skins
  * 4) Animation event listeners //TODO I hope it won't...but I guess I'll have to do something similar
- * 5) Animated model cloning //TODO not anymore...have to fix it
+ * 5) Animated model cloning //TODO not anymore...have to faix it
  * 6) Animated model binary import/export //TODO not anymore...have to fix it
  * 7) Hardware skinning
  * 8) Attachments
@@ -67,7 +67,6 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * Skeleton object must contain corresponding data for the targets' weight buffers.
      */
     private AnimationMetaData metaData = new AnimationMetaData();
-
     /**
      * the global speed of the motion
      */
@@ -78,14 +77,11 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      */
     private Map<String, Animation> animationMap = new HashMap<>();
     /**
-     * Sequences
-     */
-    private Map<String, AnimationSequence> sequences = new HashMap<>();
-    /**
      * The flat map of animation with corresponding weight updated on each frame
      */
     private BlendingDataPool weightedAnims = new BlendingDataPool();
 
+    private TreeMap<String, AnimationLayer> layers = new TreeMap<>();
     /**
      * Could help with blend space to have basic types parameter added by the user and pick the appropriate blend space
      * Not used right now
@@ -94,13 +90,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     /**
      * Animation mask list, that holdw all the masks used by this animation manager.
      */
-    private Map<String, AnimationMask> masks = new HashMap<>();
-    public final static AnimationMask DEFAULT_MASK = new AnimationMask() {
-        @Override
-        public float getWeight(int index) {
-            return 1f;
-        }
-    };
+    public final static AnimationLayer DEFAULT_LAYER = new AnimationLayer();
     public final static String ANY_STATE = "Any State";
     private final AnimState anyState = new AnimState(ANY_STATE, this);
 
@@ -108,11 +98,6 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * the list of all states of this Animation manager.
      */
     private Map<String, AnimState> states = new HashMap<>();
-
-    /**
-     * Current active state.
-     */
-    private AnimState activeState;
 
     /**
      * Animation event listeners - This I hope to get rid of....
@@ -126,7 +111,13 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @param skeleton The skeleton to animate
      */
     public AnimationManager(Skeleton skeleton) {
+        layers.put(DEFAULT_LAYER.getName(), DEFAULT_LAYER);
+        DEFAULT_LAYER.setWeight(1f);
         this.metaData.setSkeleton(skeleton);
+
+        AnimationLayer dummyLayer = new AnimationLayer("dummy");
+        dummyLayer.setIndex(-1);
+        this.anyState.setLayer(dummyLayer);
         reset();
     }
 
@@ -141,8 +132,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         //TODO fix the clone
         AnimationManager clone = (AnimationManager) super.jmeClone();
         clone.parameters = new HashMap<>();
-        clone.sequences = new HashMap<>();
-        clone.masks = new HashMap<>();
+        clone.states = new HashMap<>();
+        clone.layers = new TreeMap<>();
         clone.listeners = new ArrayList<>();
 
         return clone;
@@ -159,12 +150,12 @@ public final class AnimationManager extends AbstractControl implements Cloneable
             this.parameters.put(paramEntry.getKey(), paramEntry.getValue());
         }
 
-        for (Entry<String, AnimationSequence> animEntry : sequences.entrySet()) {
-            this.sequences.put(animEntry.getKey(), animEntry.getValue());
+        for (Entry<String, AnimState> animEntry : states.entrySet()) {
+            this.states.put(animEntry.getKey(), animEntry.getValue());
         }
 
-        for (Entry<String, AnimationMask> paramEntry : masks.entrySet()) {
-            this.masks.put(paramEntry.getKey(), paramEntry.getValue());
+        for (Entry<String, AnimationLayer> paramEntry : layers.entrySet()) {
+            this.layers.put(paramEntry.getKey(), paramEntry.getValue());
         }
 
         // Note cloneForSpatial() never actually cloned the animation map... just its reference
@@ -181,77 +172,51 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     @Override
     public void setSpatial(Spatial spatial) {
         super.setSpatial(spatial);
-        //TODO this is only needed for Audio and effect traks... may not be needed anymore.
+        //TODO this is only needed for Audio and effect tracks... may not be needed anymore.
         metaData.setSpatial(spatial);
     }
 
     /**
-     * Creates an empty animation sequence
+     * Creates a state with the given state name, for the given animations.
      *
-     * @param sequenceName the namee of the sequence
-     * @return the created sequence
-     */
-    //TODO not sure that's really needed...
-    public AnimationSequence createAnimationSequence(String sequenceName) {
-        return createAnimationSequence(sequenceName, (String) null);
-    }
-
-    /**
-     * Creates an animation sequence with the given sequenceName and made of a list of animation according to the given animNames.
-     *
-     * @param sequenceName the sequence name
-     * @param animNames    an array of animations names.
-     * @return the created sequence
-     */
-    public AnimationSequence createAnimationSequence(String sequenceName, String... animNames) {
-        AnimationSequence sequence = new AnimationSequence(sequenceName);
-        if (animNames != null) {
-            for (String animName : animNames) {
-                Anim clip = animationMap.get(animName);
-
-                if (clip == null) {
-                    //we couldn't find a clip with this name, let's look for a sequence
-                    clip = sequences.get(animName);
-                }
-                if (clip == null) {
-                    //we couldn't find a sequence either, let's throw an exception
-                    throw new IllegalArgumentException("Can't find an animation clip or sequence with name " + animName);
-                }
-                sequence.addAnimation(clip);
-            }
-        }
-
-        sequences.put(sequence.getName(), sequence);
-        return sequence;
-    }
-
-    /**
-     * Creates a state for the given sequence name, named as the sequence.
-     *
-     * @param sequenceName the name of the states sequence
-     * @return the created state
-     */
-    public AnimState createStateForSequence(String sequenceName) {
-        return createStateForSequence(sequenceName, sequenceName);
-    }
-
-    /**
-     * Creates a state for the given sequence name, with the given state name.
-     *
-     * @param sequenceName the name of the states sequence
      * @param stateName    the name of the state
      * @return the created state
      */
-    public AnimState createStateForSequence(String sequenceName, String stateName) {
-        AnimationSequence sequence = sequences.get(sequenceName);
-        if (sequence == null) {
-            throw new IllegalArgumentException("Cannot find sequence with name " + sequenceName);
-        }
+    public AnimState createStateForAnims(String stateName, String... animNames) {
         AnimState state = new AnimState(stateName, this);
-        state.setSequence(sequence);
+        if (animNames.length == 0) {
+            animNames = new String[]{stateName};
+        }
+
+        for (String animName : animNames) {
+            Anim clip = getClip(animName);
+            state.addAnimation(clip);
+        }
+
         states.put(stateName, state);
-        state.setMask(DEFAULT_MASK);
+        state.setLayer(DEFAULT_LAYER);
         return state;
+    }
+
+    public AnimState createState(String stateName) {
+        AnimState state = new AnimState(stateName, this);
+        states.put(stateName, state);
+        state.setLayer(DEFAULT_LAYER);
+        return state;
+    }
+
+    protected Anim getClip(String animName) {
+        Anim clip = animationMap.get(animName);
+
+        if (clip == null) {
+            //we couldn't find a clip with this name, let's look for a state
+            clip = states.get(animName);
+        }
+        if (clip == null) {
+            //we couldn't find a state either, let's throw an exception
+            throw new IllegalArgumentException("Can't find an animation clip or state with name " + animName);
+        }
+        return clip;
     }
 
     /**
@@ -298,7 +263,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      */
     //TODO this is not really great as it just set the state as the active states... using this while the animation is playing would just be weird...
     public void startWith(String state) {
-        activeState = findState(state);
+        DEFAULT_LAYER.setActiveState(findState(state));
     }
 
 
@@ -310,15 +275,6 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      */
     public BlendingDataPool getDebugWeightedAnims() {
         return weightedAnims;
-    }
-
-    /**
-     * returns a read only collection of sequences
-     *
-     * @return the sequences.
-     */
-    public Collection<AnimationSequence> getSequences() {
-        return sequences.values();
     }
 
     /**
@@ -374,18 +330,9 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         return metaData;
     }
 
-    /**
-     * returns the active states of this AnimationManager.
-     *
-     * @return
-     */
-    public AnimState getActiveState() {
-        return activeState;
-    }
-
 
     /**
-     * returns the globale speed of this AnimationManager
+     * returns the global speed of this AnimationManager
      *
      * @return
      */
@@ -401,6 +348,23 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      */
     public void setGlobalSpeed(float globalSpeed) {
         this.globalSpeed = globalSpeed;
+    }
+
+
+    public AnimationLayer addLayer(String name) {
+        AnimationLayer layer = new AnimationLayer(name);
+        addLayer(layer);
+        return layer;
+    }
+
+    protected void addLayer(AnimationLayer layer) {
+        layers.lastEntry().getValue().setNextLayer(layer);
+        layer.setIndex(layers.size());
+        layers.put(layer.getName(), layer);
+    }
+
+    protected AnimationLayer getLayer(String name) {
+        return layers.get(name);
     }
 
     /**
@@ -436,6 +400,10 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
     }
 
+    public TreeMap<String, AnimationLayer> getLayers() {
+        return layers;
+    }
+
     /**
      * Internal use only.
      */
@@ -446,19 +414,45 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         }
         tpf *= globalSpeed;
 
-        //Update the active state.
-
-
-        AnimState newState = activeState.update(anyState.getInterruptingTransitions(), anyState.getTransitions());
-        if (activeState != newState) {
-            //replacing the old state with the new one.
-            activeState.cleanup();
-            activeState = newState;
-        }
-
-
         weightedAnims.clear();
-        activeState.resolve(weightedAnims, tpf);
+        //Update the active states.
+        for (Entry<String, AnimationLayer> layerEntry : layers.entrySet()) {
+            AnimationLayer layer = layerEntry.getValue();
+            if (layer.getActiveState() == null) {
+                continue;
+            }
+
+            AnimState newState = layer.getActiveState().signal(anyState.getInterruptingTransitions(), anyState.getTransitions());
+            if (layer.getActiveState() != newState) {
+                if (newState == anyState) {
+
+                    if (layer == DEFAULT_LAYER) {
+                        //special case if we are on the default layer, use the fromState of the state
+                        newState = layer.getActiveState().getFromState();
+                        newState.setFromState(layer.getActiveState());
+                        newState.setIncomingTransition(anyState.getIncomingTransition());
+                    } else {
+                        //else we transition to the any state ( basically we are going to fade out the higher layer)
+                        anyState.setFromState(layer.getActiveState());
+                    }
+                }
+                if (newState.getLayer() == layer) {
+                    //layer are the same
+                    //replacing the old state with the new one.
+                    //if layer are different the 2 states will play in parallel
+                    layer.getActiveState().cleanup();
+                    layer.setActiveState(newState);
+                } else {
+                    if (newState != anyState) {
+                        newState.getLayer().setActiveState(newState);
+                    } else {
+                        layer.setActiveState(newState);
+                    }
+                }
+            }
+            layer.getActiveState().update(weightedAnims, tpf);
+
+        }
 
         //Update animations.
         TempVars vars = TempVars.get();
