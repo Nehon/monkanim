@@ -23,10 +23,23 @@ public class AnimMigrationUtil {
         AnimationManager manager = new AnimationManager(control.getSkeleton());
         for (String name : control.getAnimationNames()) {
             Animation anim = control.getAnim(name);
-            manager.addAnimation(anim);
+            manager.addAnimation(stripSpatialAnim(anim));
         }
 
         return manager;
+    }
+
+    private static Animation stripSpatialAnim(Animation anim) {
+        Track[] tracks = anim.getTracks();
+        Animation newAnim = new Animation(anim.getName(), anim.getLength());
+
+        for (Track track : tracks) {
+            if (track instanceof SpatialTrack) {
+                continue;
+            }
+            newAnim.addTrack(track);
+        }
+        return newAnim;
     }
 
 
