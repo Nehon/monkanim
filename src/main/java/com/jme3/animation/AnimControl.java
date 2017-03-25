@@ -152,7 +152,8 @@ public final class AnimControl extends AbstractControl implements Cloneable, Jme
         super.cloneFields(cloner, original);
 
         this.metaData.setSkeleton(cloner.clone(((AnimControl)original).metaData.getSkeleton()));
- 
+        this.metaData.setSpatial(spatial);
+
         // Note cloneForSpatial() never actually cloned the animation map... just its reference       
         HashMap<String, Animation> newMap = new HashMap<>();
          
