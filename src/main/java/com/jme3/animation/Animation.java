@@ -45,7 +45,7 @@ import java.util.*;
  *
  * @author Kirill Vainer, Marcin Roguski (Kaelthas)
  */
-public class Animation implements Savable, Cloneable, JmeCloneable, Anim {
+public class Animation implements Savable, Cloneable, JmeCloneable {
 
     /**
      * The name of the animation.
@@ -92,19 +92,6 @@ public class Animation implements Savable, Cloneable, JmeCloneable, Anim {
      */
     public float getLength() {
         return length;
-    }
-
-    @Override
-    public void resolve(BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask) {
-        if(globalWeight == 0){
-            return;
-        }
-
-        BlendingData bData = weightedAnims.getNext();
-        bData.setWeight(globalWeight);
-        bData.setTime(time);
-        bData.setMask(mask);
-        bData.setAnimation(this);
     }
 
     /**

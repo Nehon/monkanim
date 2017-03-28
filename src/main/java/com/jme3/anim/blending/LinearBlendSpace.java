@@ -16,7 +16,7 @@ public class LinearBlendSpace implements BlendSpace {
     private float value;
 
     @Override
-    public void blend(List<Anim> animations, BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask) {
+    public void blend(List<Anim> animations, List<AnimationData> weightedAnims, float globalWeight, float time, AnimationMask mask) {
         if(animations.size() == 1 || value == 0){
             animations.get(0).resolve(weightedAnims, globalWeight, time, mask);
             return;

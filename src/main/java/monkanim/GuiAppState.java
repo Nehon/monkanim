@@ -2,11 +2,9 @@ package monkanim;
 
 import com.jme3.anim.*;
 import com.jme3.anim.blending.*;
-import com.jme3.animation.Animation;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
 import com.jme3.math.Vector3f;
-import com.jme3.util.SafeArrayList;
 import com.simsilica.lemur.*;
 import com.simsilica.lemur.core.*;
 
@@ -120,10 +118,9 @@ public class GuiAppState extends BaseAppState {
 
     private void setAnimLabel(AnimAppState animState, String anim) {
         animState.getManager().update(0);
-        BlendingDataPool map = animState.getManager().getDebugWeightedAnims();
+        List<AnimationData> anims = animState.getManager().getDebugWeightedAnims();
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < map.size(); i++) {
-            BlendingData bData = map.get(i);
+        for (AnimationData bData : anims) {
             builder.append(bData.getAnimation().getName()).append(": ").append(String.format("%.0f", bData.getWeight() * 100f)).append("%, ");
         }
         animLabel.setText(builder.toString());

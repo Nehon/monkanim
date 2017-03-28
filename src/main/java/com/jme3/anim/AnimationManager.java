@@ -78,7 +78,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     /**
      * The flat map of animation with corresponding weight updated on each frame
      */
-    private BlendingDataPool weightedAnims = new BlendingDataPool();
+    private List<AnimationData> weightedAnims = new ArrayList<>();
 
     private TreeMap<String, AnimationLayer> layers = new TreeMap<>();
     /**
@@ -139,7 +139,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         clone.layers = new TreeMap<>();
         clone.listeners = new ArrayList<>();
         clone.metaData = new AnimationMetaData();
-        clone.weightedAnims = new BlendingDataPool();
+        clone.weightedAnims = new ArrayList<>();
         return clone;
     }
 
@@ -217,11 +217,15 @@ public final class AnimationManager extends AbstractControl implements Cloneable
     }
 
     protected Anim getClip(String animName) {
-        Anim clip = animationMap.get(animName);
+        Animation anim = animationMap.get(animName);
 
-        if (clip == null) {
-            //we couldn't find a clip with this name, let's look for a state
+        Anim clip;
+
+        if (anim == null) {
+            //we couldn't find an anim with this name, let's look for a state
             clip = states.get(animName);
+        } else {
+            clip = new AnimationData(anim);
         }
         if (clip == null) {
             //we couldn't find a state either, let's throw an exception
@@ -280,11 +284,12 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
     /**
      * This should be used only for debugging purpose.
-     * Returns a read only list of the animations with their computed blendingData.
+     * Returns the list of the animations with their computed blendingData.
      *
      * @return the list of animation with their blending data.
      */
-    public BlendingDataPool getDebugWeightedAnims() {
+    public List<AnimationData> getDebugWeightedAnims() {
+        //TODO this can be dangerous if modified from the outside...
         return weightedAnims;
     }
 
@@ -468,7 +473,7 @@ public final class AnimationManager extends AbstractControl implements Cloneable
         //Update animations.
         TempVars vars = TempVars.get();
         for (int i = 0; i < weightedAnims.size(); i++) {
-            BlendingData bData = weightedAnims.get(i);
+            AnimationData bData = weightedAnims.get(i);
             //System.err.println(anim.getName()+ ": " + animEntry.getValue());
             bData.getAnimation().setTime(bData.getTime(), bData.getWeight(), metaData, bData.getMask(), vars);
         }

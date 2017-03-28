@@ -1,7 +1,6 @@
 package com.jme3.animation;
 
 import com.jme3.anim.blending.*;
-import com.jme3.util.SafeArrayList;
 
 import java.util.*;
 
@@ -11,6 +10,7 @@ import java.util.*;
 public interface Anim {
 
     float getLength();
-    void resolve(BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask);
+
+    void resolve(List<AnimationData> weightedAnims, float globalWeight, float time, AnimationMask mask);
 
 }

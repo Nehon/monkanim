@@ -26,6 +26,7 @@ public class AnimState implements Anim, Cloneable, JmeCloneable {
     private float time;
     private float speed = 1;
     private float length = 0;
+    private float lengthOverride = -1;
     private BlendSpace blendSpace = new LinearBlendSpace();
 
     private List<Anim> animations = new SafeArrayList<>(Anim.class);
@@ -127,7 +128,7 @@ public class AnimState implements Anim, Cloneable, JmeCloneable {
      * @param weightedAnims
      * @param tpf
      */
-    public void update(BlendingDataPool weightedAnims, float tpf) {
+    public void update(List<AnimationData> weightedAnims, float tpf) {
         float weight = 1f;
         //compute blending from previous state
         if (incomingTransition != null && fromState != null) {
@@ -348,11 +349,17 @@ public class AnimState implements Anim, Cloneable, JmeCloneable {
 
     @Override
     public float getLength() {
+        if (lengthOverride != -1) {
+            return lengthOverride;
+        }
         return length;
     }
 
+    public void setLength(float length) {
+        this.lengthOverride = length;
+    }
     @Override
-    public void resolve(BlendingDataPool weightedAnims, float globalWeight, float time, AnimationMask mask) {
+    public void resolve(List<AnimationData> weightedAnims, float globalWeight, float time, AnimationMask mask) {
         if (animations.isEmpty()) {
             return;
         }
