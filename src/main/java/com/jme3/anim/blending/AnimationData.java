@@ -2,6 +2,7 @@ package com.jme3.anim.blending;
 
 import com.jme3.animation.*;
 import com.jme3.math.EaseFunction;
+import com.jme3.util.TempVars;
 
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class AnimationData implements Anim {
     }
 
     public float getTime() {
-        return time;
+        return time * scale;
     }
 
     public void setTime(float time) {
@@ -87,6 +88,10 @@ public class AnimationData implements Anim {
         setTime(time);
         setMask(mask);
         weightedAnims.add(this);
+    }
+
+    public void update(AnimationMetaData metadata, TempVars vars) {
+        animation.setTime(getTime(), getWeight(), metadata, getMask(), vars, getEasing());
     }
 }
 

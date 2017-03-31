@@ -17,16 +17,13 @@ import utils.EraseTimer;
  */
 public class AnimationBlending extends SimpleApplication {
 
-
-
-
     public static void main(String[] args) {
         AnimationBlending app = new AnimationBlending();
         app.start();
     }
 
-    public AnimationBlending(){
-        super(new StatsAppState(),new AudioListenerState(), new DebugKeysAppState(), new BlenderCameraState(true), new AnimAppState(), new GuiAppState());
+    public AnimationBlending() {
+        super(new StatsAppState(), new AudioListenerState(), new DebugKeysAppState(), new BlenderCameraState(true), new AnimAppState(), new GuiAppState());
     }
 
 
@@ -46,7 +43,6 @@ public class AnimationBlending extends SimpleApplication {
 //        getCamera().setRotation(new Quaternion(0.04338501f, -0.8087327f, 0.060133625f, 0.58348364f));
 
     }
-
 
 
     @Override

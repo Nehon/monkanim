@@ -184,8 +184,9 @@ public final class BoneTrack implements Track {
      * @param metaData
      * @param mask
      * @param vars
+     * @param timeEasingFunction the EaseFunction to use for time interpolation between keyframes.
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, EaseFunction timeEasingFunction) {
         if(mask != null) {
             float maskWeight = mask.getWeight(targetBoneIndex);
             if (maskWeight == 0f) {
@@ -229,6 +230,10 @@ public final class BoneTrack implements Track {
             float blend = (time - times[startFrame])
                     / (times[endFrame] - times[startFrame]);
 
+            if (timeEasingFunction != null) {
+                blend = timeEasingFunction.apply(blend);
+            }
+
             rotations.get(startFrame, tempQ);
             translations.get(startFrame, tempV);
             if (scales != null) {
@@ -244,11 +249,8 @@ public final class BoneTrack implements Track {
             tempS.interpolateLocal(tempS2, blend);
         }
 
-//        if (weight != 1f) {
-            target.blendAnimTransforms(tempV, tempQ, scales != null ? tempS : null, weight);
-//        } else {
-//            target.setAnimTransforms(tempV, tempQ, scales != null ? tempS : null);
-//        }
+        target.blendAnimTransforms(tempV, tempQ, scales != null ? tempS : null, weight);
+
     }
     
     /**

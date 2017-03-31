@@ -93,7 +93,7 @@ public class SpatialTrack implements Track {
      * @param time
      *            the current time of the animation
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, EaseFunction timeEasingFunction) {
         Spatial spatial = metaData.getSpatial();
         
         Vector3f tempV = vars.vect1;
@@ -130,6 +130,10 @@ public class SpatialTrack implements Track {
             }
 
             float blend = (time - times[startFrame]) / (times[endFrame] - times[startFrame]);
+
+            if (timeEasingFunction != null) {
+                blend = timeEasingFunction.apply(blend);
+            }
 
             if (rotations != null)
                 rotations.get(startFrame, tempQ);

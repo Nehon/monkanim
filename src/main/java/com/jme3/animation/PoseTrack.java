@@ -32,6 +32,7 @@
 package com.jme3.animation;
 
 import com.jme3.export.*;
+import com.jme3.math.EaseFunction;
 import com.jme3.scene.*;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.util.TempVars;
@@ -132,7 +133,8 @@ public final class PoseTrack implements Track {
         pb.updateData(pb.getData());
     }
 
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
+    @Override
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, EaseFunction timeEasingFunction) {
         // TODO: When MeshControl is created, it will gather targets
         // list automatically which is then retrieved here.
         

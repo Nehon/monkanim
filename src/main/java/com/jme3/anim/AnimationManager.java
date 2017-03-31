@@ -472,10 +472,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
 
         //Update animations.
         TempVars vars = TempVars.get();
-        for (int i = 0; i < weightedAnims.size(); i++) {
-            AnimationData bData = weightedAnims.get(i);
-            //System.err.println(anim.getName()+ ": " + animEntry.getValue());
-            bData.getAnimation().setTime(bData.getTime(), bData.getWeight(), metaData, bData.getMask(), vars);
+        for (AnimationData weightedAnim : weightedAnims) {
+            weightedAnim.update(metaData, vars);
         }
         vars.release();
 

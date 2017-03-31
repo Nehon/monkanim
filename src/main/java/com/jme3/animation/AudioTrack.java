@@ -33,6 +33,7 @@ package com.jme3.animation;
 
 import com.jme3.audio.AudioNode;
 import com.jme3.export.*;
+import com.jme3.math.EaseFunction;
 import com.jme3.scene.*;
 import com.jme3.util.TempVars;
 import com.jme3.util.clone.Cloner;
@@ -100,13 +101,14 @@ public class AudioTrack implements ClonableTrack {
         this.startOffset = startOffset;
     }
 
+
     /**
      * Internal use only
      *
      * @see Track#setTime(float, float, com.jme3.animation.AnimationMetaData,
-     * com.jme3.animation.AnimationMask, com.jme3.util.TempVars)
+     * com.jme3.animation.AnimationMask, com.jme3.util.TempVars, EaseFunction timeEasingFunctio)
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, EaseFunction timeEasingFunction) {
 
         if (time >= length) {
             if(started){
