@@ -7,7 +7,7 @@ package com.jme3.math;
 public class Easing {
 
     /**
-     * Linear Easing,basically returning the given value.
+     * In
      */
     public static EaseFunction linear = new EaseFunction() {
         @Override
@@ -16,9 +16,6 @@ public class Easing {
         }
     };
 
-    /**
-     * InQuad Easing. Quadratic
-     */
     public static EaseFunction inQuad = new EaseFunction() {
         @Override
         public float apply(float value) {
@@ -26,9 +23,6 @@ public class Easing {
         }
     };
 
-    /**
-     * InCubic Easing. Cubic
-     */
     public static EaseFunction inCubic = new EaseFunction() {
         @Override
         public float apply(float value) {
@@ -36,9 +30,6 @@ public class Easing {
         }
     };
 
-    /**
-     * InQuart Easing.
-     */
     public static EaseFunction inQuart = new EaseFunction() {
         @Override
         public float apply(float value) {
@@ -46,40 +37,16 @@ public class Easing {
         }
     };
 
-    /**
-     * OutQuad Easing.
-     */
-    public static EaseFunction outQuad = new EaseFunction() {
+    public static EaseFunction inQuint = new EaseFunction() {
         @Override
         public float apply(float value) {
-            return -(value * (value - 2f));
+            return value * value * value * value * value;
         }
     };
 
-    /**
-     * OutCubic Easing.
-     */
-    public static EaseFunction outCubic = new EaseFunction() {
-        @Override
-        public float apply(float value) {
-            value -= 1f;
-            return value * value * value + 1f;
-        }
-    };
 
     /**
-     * OutQuart Easing.
-     */
-    public static EaseFunction outQuart = new EaseFunction() {
-        @Override
-        public float apply(float value) {
-            value -= 1f;
-            return -(value * value * value * value - 1f);
-        }
-    };
-
-    /**
-     * OutElastic Easing.
+     * Out Elastic and bounce
      */
     public static EaseFunction outElastic = new EaseFunction() {
         @Override
@@ -88,9 +55,6 @@ public class Easing {
         }
     };
 
-    /**
-     * OutElastic Easing.
-     */
     public static EaseFunction outBounce = new EaseFunction() {
         @Override
         public float apply(float value) {
@@ -105,5 +69,69 @@ public class Easing {
             }
         }
     };
+
+    /**
+     * In Elastic and bounce
+     */
+    public static EaseFunction inElastic = new Invert(outElastic);
+    public static EaseFunction inBounce = new Invert(outBounce);
+
+    /**
+     * Out
+     */
+    public static EaseFunction outQuad = new Invert(inQuad);
+    public static EaseFunction outCubic = new Invert(inCubic);
+    public static EaseFunction outQuart = new Invert(inQuart);
+    public static EaseFunction outQuint = new Invert(inQuint);
+
+    /**
+     * inOut
+     */
+    public static EaseFunction inOutQuad = new InOut(inQuad, outQuad);
+    public static EaseFunction inOutCubic = new InOut(inCubic, outCubic);
+    public static EaseFunction inOutQuart = new InOut(inQuart, outQuart);
+    public static EaseFunction inOutQuint = new InOut(inQuint, outQuint);
+    public static EaseFunction inOutElastic = new InOut(inElastic, outElastic);
+    public static EaseFunction inOutBounce = new InOut(inBounce, outBounce);
+
+    /**
+     * An Ease function composed of 2 sb function for custom in and out easing
+     */
+    public static class InOut implements EaseFunction {
+
+        private EaseFunction in;
+        private EaseFunction out;
+
+        public InOut(EaseFunction in, EaseFunction out) {
+            this.in = in;
+            this.out = out;
+        }
+
+        @Override
+        public float apply(float value) {
+            if (value < 0.5) {
+                value = value * 2;
+                return inQuad.apply(value) / 2;
+            } else {
+                value = (value - 0.5f) * 2;
+                return outQuad.apply(value) / 2 + 0.5f;
+            }
+        }
+    }
+
+    private static class Invert implements EaseFunction {
+
+        private EaseFunction func;
+
+        public Invert(EaseFunction func) {
+            this.func = func;
+        }
+
+        @Override
+        public float apply(float value) {
+            return 1f - func.apply(1f - value);
+        }
+    }
+
 
 }
