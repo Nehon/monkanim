@@ -211,27 +211,35 @@ public final class BoneTrack implements Track {
             if (scales != null) {
                 scales.get(0, tempS);
             }
-        } else if (time >= times[lastFrame]) {
-            rotations.get(lastFrame, tempQ);
-            translations.get(lastFrame, tempV);
-            if (scales != null) {
-                scales.get(lastFrame, tempS);
-            }
-        } else {
+        } else {//if (time >= times[lastFrame]) {
+//            rotations.get(lastFrame, tempQ);
+//            translations.get(lastFrame, tempV);
+//            if (scales != null) {
+//                scales.get(lastFrame, tempS);
+//            }
+//            System.err.println("time over last frame");
+//        } else {
+
             int startFrame = 0;
             int endFrame = 1;
-            // use lastFrame so we never overflow the array
-            int i;
-            for (i = 0; i < lastFrame && times[i] < time; i++) {
-                startFrame = i;
-                endFrame = i + 1;
-            }
+            float blend = 0;
+            if (time >= times[lastFrame]) {
+                startFrame = lastFrame;
+                endFrame = 0;
 
-            float blend = (time - times[startFrame])
-                    / (times[endFrame] - times[startFrame]);
+                time = time - times[startFrame] + times[startFrame - 1];
+                blend = (time - times[startFrame - 1])
+                        / (times[startFrame] - times[startFrame - 1]);
 
-            if (timeEasingFunction != null) {
-                blend = timeEasingFunction.apply(blend);
+            } else {
+                // use lastFrame so we never overflow the array
+                int i;
+                for (i = 0; i < lastFrame && times[i] < time; i++) {
+                    startFrame = i;
+                    endFrame = i + 1;
+                }
+                blend = (time - times[startFrame])
+                        / (times[endFrame] - times[startFrame]);
             }
 
             rotations.get(startFrame, tempQ);

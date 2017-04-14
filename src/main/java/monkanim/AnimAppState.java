@@ -59,6 +59,7 @@ public class AnimAppState extends BaseAppState {
         manager.createState("kick").forAnims("kick");
         manager.createState("run").forAnims("run");
         manager.createState("wave").forAnims("wave");
+        manager.createState("walk_poses").forAnims("walk_poses").setLength(1.4f);
 
         //creating a wave anim on the wave layer
         manager.createState("waveLayer").forAnims("wave").onLayer("wave");
@@ -84,6 +85,7 @@ public class AnimAppState extends BaseAppState {
         manager.findState(ANY_STATE).interruptTo("walk_jog_run").when(() -> currentState.equals("walk_jog_run"));
         manager.findState(ANY_STATE).interruptTo("walk_jog").when(() -> currentState.equals("walk_jog"));
         manager.findState(ANY_STATE).interruptTo("walk_jog_nestedRun").when(() -> currentState.equals("walk_jog_nestedRun"));
+        manager.findState(ANY_STATE).interruptTo("walk_poses").when(() -> currentState.equals("walk_poses"));
 
         //Special case, when the wave state ends, it will return to "anystate", in that case the state from which wave was triggered
         //For example if you go from walk to wave, when wave ends, it will transition back to walk.

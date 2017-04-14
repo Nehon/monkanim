@@ -34,7 +34,7 @@ public class AnimationData implements Anim {
     }
 
     public float getTime() {
-        return time * scale;
+        return time / scale;
     }
 
     public void setTime(float time) {

@@ -357,6 +357,16 @@ public class AnimState implements Anim, Cloneable, JmeCloneable {
 
     public void setLength(float length) {
         this.lengthOverride = length;
+        for (Anim animation : animations) {
+            if (animation instanceof AnimationData) {
+                AnimationData ad = (AnimationData) animation;
+                float scale = length / ad.getAnimation().getLength();
+                ad.setScale(scale);
+                System.err.println(scale);
+            } else if (animation instanceof AnimState) {
+                ((AnimState) animation).setLength(length);
+            }
+        }
     }
     @Override
     public void resolve(List<AnimationData> weightedAnims, float globalWeight, float time, AnimationMask mask) {
@@ -371,7 +381,7 @@ public class AnimState implements Anim, Cloneable, JmeCloneable {
     }
 
     public boolean isFinished() {
-        return time >= length;
+        return time >= getLength();
     }
 
     public void setBlendSpace(BlendSpace blendSpace) {
