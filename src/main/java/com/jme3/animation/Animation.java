@@ -32,6 +32,7 @@
 package com.jme3.animation;
 
 import com.jme3.anim.blending.*;
+import com.jme3.anim.interpolator.TrackInterpolator;
 import com.jme3.export.*;
 import com.jme3.math.EaseFunction;
 import com.jme3.scene.Spatial;
@@ -106,7 +107,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
      * @param mask the subset of element the animation should affect
      */
     public void setTime(float time, float blendAmount, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
-        setTime(time, blendAmount, metaData, mask, vars, null);
+        setTime(time, blendAmount, metaData, mask, vars, TrackInterpolator.DEFAULT);
     }
 
     /**
@@ -118,15 +119,15 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
      * @param blendAmount        the blend amount factor
      * @param metaData           The animation meta data
      * @param mask               the subset of element the animation should affect
-     * @param timeEasingFunction the EaseFunction to use for time interpolation between keyframes.
+     * @param interpolator the EaseFunction to use for time interpolation between keyframes.
      */
-    public void setTime(float time, float blendAmount, AnimationMetaData metaData, AnimationMask mask, TempVars vars, EaseFunction timeEasingFunction) {
+    public void setTime(float time, float blendAmount, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
         if (tracks == null) {
             return;
         }
 
         for (Track track : tracks) {
-            track.setTime(time, blendAmount, metaData, mask, vars, timeEasingFunction);
+            track.setTime(time, blendAmount, metaData, mask, vars, interpolator);
         }
     }
 

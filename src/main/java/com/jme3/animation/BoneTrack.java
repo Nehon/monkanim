@@ -31,6 +31,7 @@
  */
 package com.jme3.animation;
 
+import com.jme3.anim.interpolator.TrackInterpolator;
 import com.jme3.export.*;
 import com.jme3.math.*;
 import com.jme3.util.TempVars;
@@ -184,9 +185,9 @@ public final class BoneTrack implements Track {
      * @param metaData
      * @param mask
      * @param vars
-     * @param timeEasingFunction the EaseFunction to use for time interpolation between keyframes.
+     * @param interpolator the TrackInterpolator to use for time and data interpolation between keyframes.
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, EaseFunction timeEasingFunction) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
         if(mask != null) {
             float maskWeight = mask.getWeight(targetBoneIndex);
             if (maskWeight == 0f) {
@@ -197,67 +198,44 @@ public final class BoneTrack implements Track {
 
         Bone target = metaData.getSkeleton().getBone(targetBoneIndex);
 
-        Vector3f tempV = vars.vect1;
-        Vector3f tempS = vars.vect2;
-        Quaternion tempQ = vars.quat1;
-        Vector3f tempV2 = vars.vect3;
-        Vector3f tempS2 = vars.vect4;
-        Quaternion tempQ2 = vars.quat2;
-        
         int lastFrame = times.length - 1;
         if (time < 0 || lastFrame == 0) {
+            Vector3f tempV = vars.vect1;
+            Vector3f tempS = vars.vect2;
+            Quaternion tempQ = vars.quat1;
             rotations.get(0, tempQ);
             translations.get(0, tempV);
             if (scales != null) {
                 scales.get(0, tempS);
             }
-        } else {//if (time >= times[lastFrame]) {
-//            rotations.get(lastFrame, tempQ);
-//            translations.get(lastFrame, tempV);
-//            if (scales != null) {
-//                scales.get(lastFrame, tempS);
-//            }
-//            System.err.println("time over last frame");
-//        } else {
-
-            int startFrame = 0;
-            int endFrame = 1;
-            float blend = 0;
-            if (time >= times[lastFrame]) {
-                startFrame = lastFrame;
-                endFrame = 0;
-
-                time = time - times[startFrame] + times[startFrame - 1];
-                blend = (time - times[startFrame - 1])
-                        / (times[startFrame] - times[startFrame - 1]);
-
-            } else {
-                // use lastFrame so we never overflow the array
-                int i;
-                for (i = 0; i < lastFrame && times[i] < time; i++) {
-                    startFrame = i;
-                    endFrame = i + 1;
-                }
-                blend = (time - times[startFrame])
-                        / (times[endFrame] - times[startFrame]);
-            }
-
-            rotations.get(startFrame, tempQ);
-            translations.get(startFrame, tempV);
-            if (scales != null) {
-                scales.get(startFrame, tempS);
-            }
-            rotations.get(endFrame, tempQ2);
-            translations.get(endFrame, tempV2);
-            if (scales != null) {
-                scales.get(endFrame, tempS2);
-            }
-            tempQ.nlerp(tempQ2, blend);
-            tempV.interpolateLocal(tempV2, blend);
-            tempS.interpolateLocal(tempS2, blend);
+            target.blendAnimTransforms(tempV, tempQ, scales != null ? tempS : null, weight);
+            return;
         }
 
-        target.blendAnimTransforms(tempV, tempQ, scales != null ? tempS : null, weight);
+        int startFrame = 0;
+        int endFrame = 1;
+        float blend = 0;
+        if (time >= times[lastFrame]) {
+            startFrame = lastFrame;
+            endFrame = 0;
+
+            time = time - times[startFrame] + times[startFrame - 1];
+            blend = (time - times[startFrame - 1])
+                    / (times[startFrame] - times[startFrame - 1]);
+
+        } else {
+            // use lastFrame so we never overflow the array
+            int i;
+            for (i = 0; i < lastFrame && times[i] < time; i++) {
+                startFrame = i;
+                endFrame = i + 1;
+            }
+            blend = (time - times[startFrame])
+                    / (times[endFrame] - times[startFrame]);
+        }
+
+        Transform tr = interpolator.interpolate(blend, startFrame, translations, rotations, scales);
+        target.blendAnimTransforms(tr.getTranslation(), tr.getRotation(), scales != null ? tr.getScale() : null, weight);
 
     }
     

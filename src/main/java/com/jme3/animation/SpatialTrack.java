@@ -31,6 +31,7 @@
  */
 package com.jme3.animation;
 
+import com.jme3.anim.interpolator.TrackInterpolator;
 import com.jme3.export.*;
 import com.jme3.math.*;
 import com.jme3.scene.Spatial;
@@ -93,15 +94,12 @@ public class SpatialTrack implements Track {
      * @param time
      *            the current time of the animation
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, EaseFunction timeEasingFunction) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
         Spatial spatial = metaData.getSpatial();
         
         Vector3f tempV = vars.vect1;
         Vector3f tempS = vars.vect2;
         Quaternion tempQ = vars.quat1;
-        Vector3f tempV2 = vars.vect3;
-        Vector3f tempS2 = vars.vect4;
-        Quaternion tempQ2 = vars.quat2;
         
         int lastFrame = times.length - 1;
         if (time < 0 || lastFrame == 0) {
@@ -131,27 +129,10 @@ public class SpatialTrack implements Track {
 
             float blend = (time - times[startFrame]) / (times[endFrame] - times[startFrame]);
 
-            if (timeEasingFunction != null) {
-                blend = timeEasingFunction.apply(blend);
-            }
+            Transform tr = interpolator.interpolate(blend, startFrame, translations, rotations, scales);
 
-            if (rotations != null)
-                rotations.get(startFrame, tempQ);
-            if (translations != null)
-                translations.get(startFrame, tempV);
-            if (scales != null) {
-                scales.get(startFrame, tempS);
-            }
-            if (rotations != null)
-                rotations.get(endFrame, tempQ2);
-            if (translations != null)
-                translations.get(endFrame, tempV2);
-            if (scales != null) {
-                scales.get(endFrame, tempS2);
-            }
-            tempQ.nlerp(tempQ2, blend);
-            tempV.interpolateLocal(tempV2, blend);
-            tempS.interpolateLocal(tempS2, blend);
+            spatial.setLocalTransform(tr);
+            return;
         }
         
         if (translations != null)

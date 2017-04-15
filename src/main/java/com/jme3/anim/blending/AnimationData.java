@@ -1,5 +1,6 @@
 package com.jme3.anim.blending;
 
+import com.jme3.anim.interpolator.TrackInterpolator;
 import com.jme3.animation.*;
 import com.jme3.math.EaseFunction;
 import com.jme3.util.TempVars;
@@ -16,7 +17,7 @@ public class AnimationData implements Anim {
     private Animation animation = null;
     private AnimationMask mask;
     private float scale = 1.0f;
-    private EaseFunction easing;
+    private TrackInterpolator interpolator = TrackInterpolator.DEFAULT;
 
     public AnimationData() {
     }
@@ -65,12 +66,12 @@ public class AnimationData implements Anim {
         this.scale = scale;
     }
 
-    public EaseFunction getEasing() {
-        return easing;
+    public TrackInterpolator getInterpolator() {
+        return interpolator;
     }
 
-    public void setEasing(EaseFunction easing) {
-        this.easing = easing;
+    public void setInterpolator(TrackInterpolator interpolator) {
+        this.interpolator = interpolator;
     }
 
     @Override
@@ -91,7 +92,7 @@ public class AnimationData implements Anim {
     }
 
     public void update(AnimationMetaData metadata, TempVars vars) {
-        animation.setTime(getTime(), getWeight(), metadata, getMask(), vars, getEasing());
+        animation.setTime(getTime(), getWeight(), metadata, getMask(), vars, interpolator);
     }
 }
 

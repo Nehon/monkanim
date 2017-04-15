@@ -31,6 +31,7 @@
  */
 package com.jme3.animation;
 
+import com.jme3.anim.interpolator.TrackInterpolator;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.export.*;
 import com.jme3.math.EaseFunction;
@@ -63,6 +64,7 @@ import java.util.logging.*;
  *
  * @author Nehon
  */
+@Deprecated
 public class EffectTrack implements ClonableTrack {
 
     private static final Logger logger = Logger.getLogger(EffectTrack.class.getName());
@@ -196,7 +198,7 @@ public class EffectTrack implements ClonableTrack {
      * @see Track#setTime(float, float, com.jme3.animation.AnimationMetaData,
      * com.jme3.animation.AnimationMask, com.jme3.util.TempVars, EaseFunction timeEasingFunctio)
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, EaseFunction timeEasingFunction) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
 
         if (time >= length) {
             if(emitted){

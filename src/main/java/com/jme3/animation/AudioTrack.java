@@ -31,6 +31,7 @@
  */
 package com.jme3.animation;
 
+import com.jme3.anim.interpolator.TrackInterpolator;
 import com.jme3.audio.AudioNode;
 import com.jme3.export.*;
 import com.jme3.math.EaseFunction;
@@ -60,6 +61,7 @@ import static java.awt.SystemColor.control;
  *
  * @author Nehon
  */
+@Deprecated
 public class AudioTrack implements ClonableTrack {
 
     private static final Logger logger = Logger.getLogger(AudioTrack.class.getName());
@@ -108,7 +110,7 @@ public class AudioTrack implements ClonableTrack {
      * @see Track#setTime(float, float, com.jme3.animation.AnimationMetaData,
      * com.jme3.animation.AnimationMask, com.jme3.util.TempVars, EaseFunction timeEasingFunctio)
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, EaseFunction timeEasingFunction) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
 
         if (time >= length) {
             if(started){
