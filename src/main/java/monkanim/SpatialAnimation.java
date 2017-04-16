@@ -33,20 +33,24 @@ public class SpatialAnimation extends SimpleApplication {
         app.start();
     }
 
-
-
+    private static final float LENGTH = 5.0f;
+    float time = 0;
+    float lastTime = 0;
+    Geometry mobile;
     @Override
     public void simpleInitApp() {
         setTimer(new EraseTimer());
 
         setPauseOnLostFocus(false);
 
-        Geometry mobile = createGeom(0.2f, ColorRGBA.Cyan);
+        mobile = createGeom(0.2f, ColorRGBA.Cyan);
 
-        AnimationFactory f = new AnimationFactory(0.099f,"Anim",30);
+        AnimationFactory f = new AnimationFactory(0.165f,"Anim",30);
         f.addKeyFrameTranslation(0,new Vector3f(-1, 0, 0));
         f.addKeyFrameTranslation(1,new Vector3f(0, 1.732f, 0));
         f.addKeyFrameTranslation(2,new Vector3f(1, 0, 0));
+        f.addKeyFrameTranslation(3,new Vector3f(2, 1.732f, 0));
+        f.addKeyFrameTranslation(4,new Vector3f(3, 0, 0));
 
         Geometry g1 = createGeom(0.1f, ColorRGBA.Red);
         g1.setLocalTranslation(-1,0,0);
@@ -57,11 +61,16 @@ public class SpatialAnimation extends SimpleApplication {
         Geometry g3 = createGeom(0.1f, ColorRGBA.Red);
         g3.setLocalTranslation(1, 0, 0);
 
+        Geometry g4 = createGeom(0.1f, ColorRGBA.Red);
+        g4.setLocalTranslation(2, 1.732f, 0);
+        Geometry g5 = createGeom(0.1f, ColorRGBA.Red);
+        g5.setLocalTranslation(3, 0, 0);
+
         Animation anim = f.buildAnimation();
         AnimationManager man = new AnimationManager();
         man.addAnimation(anim);
 
-        man.createState("Anim").forAnims("Anim").setTranslationInterpolator(0,AnimInterpolators.CubicVec3f).setLength(5);
+        man.createState("Anim").forAnims("Anim").setTranslationInterpolator(0, AnimInterpolators.CatmullRom).setLength(LENGTH);
 
         man.startWith("Anim");
         mobile.addControl(man);
@@ -78,9 +87,17 @@ public class SpatialAnimation extends SimpleApplication {
     }
 
 
+
     @Override
     public void simpleUpdate(float tpf) {
-
+        time +=tpf;
+        if(time< LENGTH){
+            if(time - lastTime > LENGTH/100f){
+                lastTime = time;
+                Geometry geom = createGeom(0.01f, ColorRGBA.Blue);
+                geom.setLocalTranslation(mobile.getLocalTranslation());
+            }
+        }
     }
 
     @Override
