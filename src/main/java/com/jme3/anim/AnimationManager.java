@@ -115,13 +115,8 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * @param skeleton The skeleton to animate
      */
     public AnimationManager(Skeleton skeleton) {
-        layers.put(defaultLayer.getName(), defaultLayer);
-        defaultLayer.setWeight(1f);
+        this();
         this.metaData.setSkeleton(skeleton);
-
-        AnimationLayer dummyLayer = new AnimationLayer("dummy");
-        dummyLayer.setIndex(-1);
-        this.anyState.setLayer(dummyLayer);
         reset();
     }
 
@@ -129,6 +124,11 @@ public final class AnimationManager extends AbstractControl implements Cloneable
      * Serialization only. Do not use.
      */
     public AnimationManager() {
+        layers.put(defaultLayer.getName(), defaultLayer);
+        defaultLayer.setWeight(1f);
+        AnimationLayer dummyLayer = new AnimationLayer("dummy");
+        dummyLayer.setIndex(-1);
+        this.anyState.setLayer(dummyLayer);
     }
 
     @Override

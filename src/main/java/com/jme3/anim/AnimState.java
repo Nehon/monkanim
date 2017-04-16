@@ -1,9 +1,13 @@
 package com.jme3.anim;
 
 import com.jme3.anim.blending.*;
+import com.jme3.anim.interpolator.AnimInterpolator;
 import com.jme3.animation.Anim;
 import com.jme3.animation.AnimationMask;
+import com.jme3.math.EaseFunction;
 import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Vector3f;
 import com.jme3.util.SafeArrayList;
 import com.jme3.util.clone.Cloner;
 import com.jme3.util.clone.JmeCloneable;
@@ -390,6 +394,36 @@ public class AnimState implements Anim, Cloneable, JmeCloneable {
 
     public AnimState withBlendSpace(BlendSpace blendSpace) {
         setBlendSpace(blendSpace);
+        return this;
+    }
+
+    private AnimationData getAnimData(int index){
+        Anim anim = animations.get(index);
+        if( !(anim instanceof AnimationData )){
+            throw new IllegalArgumentException("No animation data at this index");
+        }
+
+        return (AnimationData) anim;
+    }
+
+
+    public AnimState setTranslationInterpolator(int index, AnimInterpolator<Vector3f> interpolator){
+        getAnimData(index).getTrackInterpolator().setTranslationInterpolator(interpolator);
+        return this;
+    }
+
+    public AnimState setRotationInterpolator(int index, AnimInterpolator<Quaternion> interpolator){
+        getAnimData(index).getTrackInterpolator().setRotationInterpolator(interpolator);
+        return this;
+    }
+
+    public AnimState setScaleInterpolator(int index, AnimInterpolator<Vector3f> interpolator){
+        getAnimData(index).getTrackInterpolator().setScaleInterpolator(interpolator);
+        return this;
+    }
+
+    public AnimState setEaseFunction(int index, EaseFunction easing){
+        getAnimData(index).getTrackInterpolator().setEaseFunction(easing);
         return this;
     }
 

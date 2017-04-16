@@ -22,24 +22,26 @@ public class TrackInterpolator {
     private TrackDataReader<Vector3f> translationReader = new TrackDataReader<>();
     private TrackDataReader<Quaternion> rotationReader = new TrackDataReader<>();
     private TrackDataReader<Vector3f> scaleReader = new TrackDataReader<>();
+    private TrackTimeReader timesReader = new TrackTimeReader();
 
     private Transform transforms = new Transform();
 
-    public Transform interpolate(float t, int currentIndex, CompactVector3Array translations, CompactQuaternionArray rotations, CompactVector3Array scales){
+    public Transform interpolate(float t, int currentIndex, CompactVector3Array translations, CompactQuaternionArray rotations, CompactVector3Array scales, float[] times){
+        timesReader.setData(times);
         if( easeFunction != null){
             t = easeFunction.apply(t);
         }
         if(translations != null) {
             translationReader.setData(translations);
-            translationInterpolator.interpolate(t, currentIndex, translationReader, transforms.getTranslation());
+            translationInterpolator.interpolate(t, currentIndex, translationReader, timesReader, transforms.getTranslation());
         }
         if(rotations != null) {
             rotationReader.setData(rotations);
-            rotationInterpolator.interpolate(t, currentIndex, rotationReader, transforms.getRotation());
+            rotationInterpolator.interpolate(t, currentIndex, rotationReader, timesReader, transforms.getRotation());
         }
         if(scales != null){
             scaleReader.setData(scales);
-            scaleInterpolator.interpolate(t, currentIndex, scaleReader, transforms.getScale());
+            scaleInterpolator.interpolate(t, currentIndex, scaleReader, timesReader, transforms.getScale());
         }
         return transforms;
     }

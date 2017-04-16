@@ -15,7 +15,11 @@ public class TrackDataReader<T> {
     }
 
     public T getEntry(int index, T store){
-        return data.get(index % data.getTotalObjectSize(), store);
+        return data.get(mod(index, data.getTotalObjectSize()), store);
     }
+
+    private int mod(int val, int n) {
+        return ((val%n)+n)%n;
+    };
 
 }

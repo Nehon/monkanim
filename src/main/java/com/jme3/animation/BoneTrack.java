@@ -217,7 +217,6 @@ public final class BoneTrack implements Track {
         float blend = 0;
         if (time >= times[lastFrame]) {
             startFrame = lastFrame;
-            endFrame = 0;
 
             time = time - times[startFrame] + times[startFrame - 1];
             blend = (time - times[startFrame - 1])
@@ -234,7 +233,7 @@ public final class BoneTrack implements Track {
                     / (times[endFrame] - times[startFrame]);
         }
 
-        Transform tr = interpolator.interpolate(blend, startFrame, translations, rotations, scales);
+        Transform tr = interpolator.interpolate(blend, startFrame, translations, rotations, scales, times);
         target.blendAnimTransforms(tr.getTranslation(), tr.getRotation(), scales != null ? tr.getScale() : null, weight);
 
     }

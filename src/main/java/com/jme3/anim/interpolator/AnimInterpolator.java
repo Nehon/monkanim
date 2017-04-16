@@ -7,6 +7,6 @@ import com.jme3.math.EaseFunction;
  */
 public abstract class AnimInterpolator<T> {
 
-    public abstract T interpolate(float t, int currentIndex, TrackDataReader<T> data, T store);
+    public abstract T interpolate(float t, int currentIndex, TrackDataReader<T> data, TrackTimeReader times, T store);
 
 }

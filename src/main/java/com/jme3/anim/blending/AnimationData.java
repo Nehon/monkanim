@@ -66,17 +66,20 @@ public class AnimationData implements Anim {
         this.scale = scale;
     }
 
-    public TrackInterpolator getInterpolator() {
-        return interpolator;
-    }
-
-    public void setInterpolator(TrackInterpolator interpolator) {
+    public void setTrackInterpolator(TrackInterpolator interpolator) {
         this.interpolator = interpolator;
     }
 
     @Override
     public float getLength() {
         return animation.getLength() * scale;
+    }
+
+    public TrackInterpolator getTrackInterpolator(){
+        if(interpolator == TrackInterpolator.DEFAULT){
+            interpolator = new TrackInterpolator();
+        }
+        return interpolator;
     }
 
     @Override

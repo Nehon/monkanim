@@ -129,7 +129,7 @@ public class SpatialTrack implements Track {
 
             float blend = (time - times[startFrame]) / (times[endFrame] - times[startFrame]);
 
-            Transform tr = interpolator.interpolate(blend, startFrame, translations, rotations, scales);
+            Transform tr = interpolator.interpolate(blend, startFrame, translations, rotations, scales, times);
 
             spatial.setLocalTransform(tr);
             return;

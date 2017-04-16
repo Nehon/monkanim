@@ -2,6 +2,7 @@ package monkanim;
 
 import com.jme3.anim.*;
 import com.jme3.anim.blending.LinearBlendSpace;
+import com.jme3.anim.interpolator.AnimInterpolators;
 import com.jme3.animation.*;
 import com.jme3.app.*;
 import com.jme3.app.state.BaseAppState;
@@ -59,7 +60,7 @@ public class AnimAppState extends BaseAppState {
         manager.createState("kick").forAnims("kick");
         manager.createState("run").forAnims("run");
         manager.createState("wave").forAnims("wave");
-        manager.createState("walk_poses").forAnims("walk_poses").setLength(1.4f);
+        manager.createState("walk_poses").forAnims("walk_poses").setTranslationInterpolator(0, AnimInterpolators.CubicVec3f).setLength(1.4f);
 
         //creating a wave anim on the wave layer
         manager.createState("waveLayer").forAnims("wave").onLayer("wave");
