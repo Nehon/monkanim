@@ -1,13 +1,13 @@
 package com.jme3.anim.interpolator;
 
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
-import com.jme3.math.Vector3f;
+import com.jme3.math.*;
 
 /**
  * Created by nehon on 15/04/17.
  */
 public class AnimInterpolators {
+
+    //Rotation interpolators
 
     public static final AnimInterpolator<Quaternion> NLerp = new AnimInterpolator<Quaternion>() {
         private Quaternion next = new Quaternion();
@@ -31,6 +31,8 @@ public class AnimInterpolators {
         }
     };
 
+    //Position / Scale interpolators
+
     public static final AnimInterpolator<Vector3f> LinearVec3f = new AnimInterpolator<Vector3f>() {
         private Vector3f next = new Vector3f();
         @Override
@@ -43,7 +45,7 @@ public class AnimInterpolators {
     };
 
 //    /**
-//     * Cubic hermit spline interpolation with finite difference tangents.
+//     * Cubic hermite spline interpolation with finite difference tangents.
 //     * https://en.wikipedia.org/wiki/Cubic_Hermite_spline
 //     */
 //    public static AnimInterpolator<Vector3f> CubicVec3f = new AnimInterpolator<Vector3f>() {
@@ -123,6 +125,47 @@ public class AnimInterpolators {
             FastMath.interpolateCatmullRom(t, tension, p0,p1,p2,p3, store);
             return store;
         }
-    };
+    }
+
+    //Time Interpolators
+
+    public static class TimeInterpolator extends AnimInterpolator<Float>{
+        private EaseFunction ease;
+
+        public TimeInterpolator(EaseFunction ease) {
+            this.ease = ease;
+        }
+
+        @Override
+        public Float interpolate(float t, int currentIndex, TrackDataReader<Float> data, TrackTimeReader times, Float store) {
+            return ease.apply(t);
+        }
+    }
+
+    //in
+    public static final TimeInterpolator easeInQuad = new TimeInterpolator(Easing.inQuad);
+    public static final TimeInterpolator easeInCubic = new TimeInterpolator(Easing.inCubic);
+    public static final TimeInterpolator easeInQuart = new TimeInterpolator(Easing.inQuart);
+    public static final TimeInterpolator easeInQuint = new TimeInterpolator(Easing.inQuint);
+    public static final TimeInterpolator easeInBounce = new TimeInterpolator(Easing.inBounce);
+    public static final TimeInterpolator easeInElastic = new TimeInterpolator(Easing.inElastic);
+
+    //out
+    public static final TimeInterpolator easeOutQuad = new TimeInterpolator(Easing.outQuad);
+    public static final TimeInterpolator easeOutCubic = new TimeInterpolator(Easing.outCubic);
+    public static final TimeInterpolator easeOutQuart = new TimeInterpolator(Easing.outQuart);
+    public static final TimeInterpolator easeOutQuint = new TimeInterpolator(Easing.outQuint);
+    public static final TimeInterpolator easeOutBounce = new TimeInterpolator(Easing.outBounce);
+    public static final TimeInterpolator easeOutElastic = new TimeInterpolator(Easing.outElastic);
+
+    //inout
+    public static final TimeInterpolator easeInOutQuad = new TimeInterpolator(Easing.inOutQuad);
+    public static final TimeInterpolator easeInOutCubic = new TimeInterpolator(Easing.inOutCubic);
+    public static final TimeInterpolator easeInOutQuart = new TimeInterpolator(Easing.inOutQuart);
+    public static final TimeInterpolator easeInOutQuint = new TimeInterpolator(Easing.inOutQuint);
+    public static final TimeInterpolator easeInOutBounce = new TimeInterpolator(Easing.inOutBounce);
+    public static final TimeInterpolator easeInOutElastic = new TimeInterpolator(Easing.inOutElastic);
+
+
 
 }

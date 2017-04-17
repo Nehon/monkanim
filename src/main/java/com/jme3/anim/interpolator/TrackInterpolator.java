@@ -1,5 +1,6 @@
 package com.jme3.anim.interpolator;
 
+import com.google.common.primitives.Floats;
 import com.jme3.animation.CompactQuaternionArray;
 import com.jme3.animation.CompactVector3Array;
 import com.jme3.math.EaseFunction;
@@ -14,7 +15,7 @@ public class TrackInterpolator {
 
     public static final TrackInterpolator DEFAULT = new TrackInterpolator();
 
-    private EaseFunction easeFunction;
+    private AnimInterpolator<Float> timeInterpolator;
     private AnimInterpolator<Vector3f> translationInterpolator = AnimInterpolators.LinearVec3f;
     private AnimInterpolator<Quaternion> rotationInterpolator = AnimInterpolators.NLerp;
     private AnimInterpolator<Vector3f> scaleInterpolator = AnimInterpolators.LinearVec3f;
@@ -28,8 +29,8 @@ public class TrackInterpolator {
 
     public Transform interpolate(float t, int currentIndex, CompactVector3Array translations, CompactQuaternionArray rotations, CompactVector3Array scales, float[] times){
         timesReader.setData(times);
-        if( easeFunction != null){
-            t = easeFunction.apply(t);
+        if( timeInterpolator != null){
+            t = timeInterpolator.interpolate(t,currentIndex, null, timesReader, null );
         }
         if(translations != null) {
             translationReader.setData(translations);
@@ -46,8 +47,8 @@ public class TrackInterpolator {
         return transforms;
     }
 
-    public void setEaseFunction(EaseFunction easeFunction) {
-        this.easeFunction = easeFunction;
+    public void setTimeInterpolator(AnimInterpolator<Float> timeInterpolator) {
+        this.timeInterpolator = timeInterpolator;
     }
 
     public void setTranslationInterpolator(AnimInterpolator<Vector3f> translationInterpolator) {

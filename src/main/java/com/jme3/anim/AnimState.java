@@ -422,8 +422,8 @@ public class AnimState implements Anim, Cloneable, JmeCloneable {
         return this;
     }
 
-    public AnimState setEaseFunction(int index, EaseFunction easing){
-        getAnimData(index).getTrackInterpolator().setEaseFunction(easing);
+    public AnimState setTimeInterpolator(int index, AnimInterpolator<Float> timeInterpolator){
+        getAnimData(index).getTrackInterpolator().setTimeInterpolator(timeInterpolator);
         return this;
     }
 
