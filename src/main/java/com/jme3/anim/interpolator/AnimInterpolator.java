@@ -1,7 +1,6 @@
 package com.jme3.anim.interpolator;
 
-import com.jme3.math.EaseFunction;
-
+import static com.jme3.anim.interpolator.FrameInterpolator.*;
 /**
  * Created by nehon on 15/04/17.
  */

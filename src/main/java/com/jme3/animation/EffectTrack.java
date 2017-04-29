@@ -31,10 +31,11 @@
  */
 package com.jme3.animation;
 
-import com.jme3.anim.interpolator.TrackInterpolator;
+import com.jme3.anim.interpolator.FrameInterpolator;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.export.*;
 import com.jme3.math.EaseFunction;
+import com.jme3.math.Transform;
 import com.jme3.renderer.*;
 import com.jme3.scene.*;
 import com.jme3.scene.Spatial.CullHint;
@@ -198,7 +199,7 @@ public class EffectTrack implements ClonableTrack {
      * @see Track#setTime(float, float, com.jme3.animation.AnimationMetaData,
      * com.jme3.animation.AnimationMask, com.jme3.util.TempVars, EaseFunction timeEasingFunctio)
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, FrameInterpolator interpolator) {
 
         if (time >= length) {
             if(emitted){

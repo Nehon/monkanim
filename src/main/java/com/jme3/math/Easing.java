@@ -6,6 +6,13 @@ package com.jme3.math;
  */
 public class Easing {
 
+
+    public static EaseFunction constant = new EaseFunction() {
+        @Override
+        public float apply(float value) {
+            return 0;
+        }
+    };
     /**
      * In
      */
@@ -93,6 +100,25 @@ public class Easing {
     public static EaseFunction inOutQuint = new InOut(inQuint, outQuint);
     public static EaseFunction inOutElastic = new InOut(inElastic, outElastic);
     public static EaseFunction inOutBounce = new InOut(inBounce, outBounce);
+
+
+    /**
+     * Extra functions
+     */
+
+    public static EaseFunction smoothStep = new EaseFunction() {
+        @Override
+        public float apply(float t) {
+            return t * t * (3f - 2f * t);
+        }
+    };
+
+    public static EaseFunction smootherStep = new EaseFunction() {
+        @Override
+        public float apply(float t) {
+            return t * t * t * (t * (t * 6f - 15f) + 10f);
+        }
+    };
 
     /**
      * An Ease function composed of 2 sb function for custom in and out easing

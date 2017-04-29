@@ -31,9 +31,9 @@
  */
 package com.jme3.animation;
 
-import com.jme3.anim.interpolator.TrackInterpolator;
+import com.jme3.anim.interpolator.FrameInterpolator;
 import com.jme3.export.Savable;
-import com.jme3.math.EaseFunction;
+import com.jme3.math.Transform;
 import com.jme3.util.TempVars;
 
 public interface Track extends Savable, Cloneable {
@@ -49,9 +49,9 @@ public interface Track extends Savable, Cloneable {
      * @param weight The weight from 0 to 1 on how much to apply the track 
      * @param metaData The animation meta data
      * @param mask the subset of element the track should affect
-     * @param interpolator the TrackInterpolator to use for time and transforms interpolation between keyframes.
+     * @param interpolator the FrameInterpolator to use for time and transforms interpolation between keyframes.
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator);
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, FrameInterpolator interpolator);
 
     /**
      * @return the length of the track

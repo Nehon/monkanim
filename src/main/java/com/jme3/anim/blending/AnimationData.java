@@ -1,8 +1,7 @@
 package com.jme3.anim.blending;
 
-import com.jme3.anim.interpolator.TrackInterpolator;
+import com.jme3.anim.interpolator.FrameInterpolator;
 import com.jme3.animation.*;
-import com.jme3.math.EaseFunction;
 import com.jme3.util.TempVars;
 
 import java.util.List;
@@ -17,7 +16,7 @@ public class AnimationData implements Anim {
     private Animation animation = null;
     private AnimationMask mask;
     private float scale = 1.0f;
-    private TrackInterpolator interpolator = TrackInterpolator.DEFAULT;
+    private FrameInterpolator interpolator = FrameInterpolator.DEFAULT;
 
     public AnimationData() {
     }
@@ -66,7 +65,7 @@ public class AnimationData implements Anim {
         this.scale = scale;
     }
 
-    public void setTrackInterpolator(TrackInterpolator interpolator) {
+    public void setTrackInterpolator(FrameInterpolator interpolator) {
         this.interpolator = interpolator;
     }
 
@@ -75,9 +74,9 @@ public class AnimationData implements Anim {
         return animation.getLength() * scale;
     }
 
-    public TrackInterpolator getTrackInterpolator(){
-        if(interpolator == TrackInterpolator.DEFAULT){
-            interpolator = new TrackInterpolator();
+    public FrameInterpolator getTrackInterpolator(){
+        if(interpolator == FrameInterpolator.DEFAULT){
+            interpolator = new FrameInterpolator();
         }
         return interpolator;
     }

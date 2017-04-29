@@ -31,10 +31,11 @@
  */
 package com.jme3.animation;
 
-import com.jme3.anim.interpolator.TrackInterpolator;
+import com.jme3.anim.interpolator.FrameInterpolator;
 import com.jme3.export.*;
 import com.jme3.math.*;
 import com.jme3.util.TempVars;
+
 import java.io.IOException;
 
 /**
@@ -185,9 +186,9 @@ public final class BoneTrack implements Track {
      * @param metaData
      * @param mask
      * @param vars
-     * @param interpolator the TrackInterpolator to use for time and data interpolation between keyframes.
+     * @param interpolator the FrameInterpolator to use for time and data interpolation between keyframes.
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, FrameInterpolator interpolator) {
         if(mask != null) {
             float maskWeight = mask.getWeight(targetBoneIndex);
             if (maskWeight == 0f) {
@@ -237,7 +238,6 @@ public final class BoneTrack implements Track {
         target.blendAnimTransforms(tr.getTranslation(), tr.getRotation(), scales != null ? tr.getScale() : null, weight);
 
     }
-    
     /**
      * @return the length of the track
      */

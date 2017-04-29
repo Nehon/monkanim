@@ -31,9 +31,9 @@
  */
 package com.jme3.animation;
 
-import com.jme3.anim.interpolator.TrackInterpolator;
+import com.jme3.anim.interpolator.FrameInterpolator;
 import com.jme3.export.*;
-import com.jme3.math.EaseFunction;
+import com.jme3.math.Transform;
 import com.jme3.scene.*;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.util.TempVars;
@@ -135,7 +135,7 @@ public final class PoseTrack implements Track {
     }
 
     @Override
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, FrameInterpolator interpolator) {
         // TODO: When MeshControl is created, it will gather targets
         // list automatically which is then retrieved here.
         

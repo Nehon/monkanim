@@ -31,7 +31,7 @@
  */
 package com.jme3.animation;
 
-import com.jme3.anim.interpolator.TrackInterpolator;
+import com.jme3.anim.interpolator.FrameInterpolator;
 import com.jme3.export.*;
 import com.jme3.math.*;
 import com.jme3.scene.Spatial;
@@ -94,7 +94,7 @@ public class SpatialTrack implements Track {
      * @param time
      *            the current time of the animation
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, FrameInterpolator interpolator) {
         Spatial spatial = metaData.getSpatial();
         
         Vector3f tempV = vars.vect1;

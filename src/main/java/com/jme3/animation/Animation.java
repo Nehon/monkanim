@@ -31,16 +31,13 @@
  */
 package com.jme3.animation;
 
-import com.jme3.anim.blending.*;
-import com.jme3.anim.interpolator.TrackInterpolator;
+import com.jme3.anim.interpolator.FrameInterpolator;
 import com.jme3.export.*;
-import com.jme3.math.EaseFunction;
 import com.jme3.scene.Spatial;
 import com.jme3.util.*;
 import com.jme3.util.clone.*;
 
 import java.io.IOException;
-import java.util.*;
 
 /**
  * The animation class updates the animation target with the tracks of a given type.
@@ -107,7 +104,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
      * @param mask the subset of element the animation should affect
      */
     public void setTime(float time, float blendAmount, AnimationMetaData metaData, AnimationMask mask, TempVars vars) {
-        setTime(time, blendAmount, metaData, mask, vars, TrackInterpolator.DEFAULT);
+        setTime(time, blendAmount, metaData, mask, vars, FrameInterpolator.DEFAULT);
     }
 
     /**
@@ -121,7 +118,7 @@ public class Animation implements Savable, Cloneable, JmeCloneable {
      * @param mask               the subset of element the animation should affect
      * @param interpolator the EaseFunction to use for time interpolation between keyframes.
      */
-    public void setTime(float time, float blendAmount, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
+    public void setTime(float time, float blendAmount, AnimationMetaData metaData, AnimationMask mask, TempVars vars, FrameInterpolator interpolator) {
         if (tracks == null) {
             return;
         }

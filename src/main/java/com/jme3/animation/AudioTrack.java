@@ -31,18 +31,17 @@
  */
 package com.jme3.animation;
 
-import com.jme3.anim.interpolator.TrackInterpolator;
+import com.jme3.anim.interpolator.FrameInterpolator;
 import com.jme3.audio.AudioNode;
 import com.jme3.export.*;
 import com.jme3.math.EaseFunction;
+import com.jme3.math.Transform;
 import com.jme3.scene.*;
 import com.jme3.util.TempVars;
 import com.jme3.util.clone.Cloner;
 
 import java.io.IOException;
 import java.util.logging.*;
-
-import static java.awt.SystemColor.control;
 
 /**
  * AudioTrack is a track to add to an existing animation, to play a sound during
@@ -110,7 +109,7 @@ public class AudioTrack implements ClonableTrack {
      * @see Track#setTime(float, float, com.jme3.animation.AnimationMetaData,
      * com.jme3.animation.AnimationMask, com.jme3.util.TempVars, EaseFunction timeEasingFunctio)
      */
-    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, TrackInterpolator interpolator) {
+    public void setTime(float time, float weight, AnimationMetaData metaData, AnimationMask mask, TempVars vars, FrameInterpolator interpolator) {
 
         if (time >= length) {
             if(started){

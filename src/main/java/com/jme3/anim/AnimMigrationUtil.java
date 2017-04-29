@@ -31,7 +31,16 @@ public class AnimMigrationUtil {
 
     private static Animation stripSpatialAnim(Animation anim) {
         Track[] tracks = anim.getTracks();
-        Animation newAnim = new Animation(anim.getName(), anim.getLength());
+        float length =0;
+        for (Track track : tracks) {
+            if (track instanceof SpatialTrack) {
+                continue;
+            }
+            float[] times = track.getKeyFrameTimes();
+            length = Math.max(length, times[times.length - 1]);
+        }
+
+        Animation newAnim = new Animation(anim.getName(), length);
 
         for (Track track : tracks) {
             if (track instanceof SpatialTrack) {

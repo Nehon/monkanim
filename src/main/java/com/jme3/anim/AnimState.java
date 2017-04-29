@@ -78,7 +78,6 @@ public class AnimState implements Anim, Cloneable, JmeCloneable {
         } else {
             nextState = checkTransitions(additionnalTransitions);
         }
-        //TODO check for layers and perform layer blending if relevant
         return nextState;
     }
 

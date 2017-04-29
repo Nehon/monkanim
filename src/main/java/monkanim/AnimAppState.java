@@ -49,7 +49,7 @@ public class AnimAppState extends BaseAppState {
         rig.addControl(skelControl);
 
         //creating a layer that affects the left arm.
-        //Note that there is a default layer that affects the entire skeleton
+        //Note that there is a default laylaer that affects the entire skeleton
         manager.addLayer("wave").withMask(SkeletonMask.fromBone(skeleton, "shoulder.L"));
 
         //state machine
@@ -62,8 +62,25 @@ public class AnimAppState extends BaseAppState {
         manager.createState("wave").forAnims("wave");
         manager.createState("walk_poses").forAnims("walk_poses")
                 .setTranslationInterpolator(0, AnimInterpolators.CatmullRom)
-              //  .setTimeInterpolator(0, AnimInterpolators.easeInQuad)
-                .setLength(1.4f);
+//                .setRotationInterpolator(0, AnimInterpolators.NLerp)
+                //.setTimeInterpolator(0, AnimInterpolators.easeInOutElastic)
+                .setLength(1.8f);
+//        manager.createState("crouch").forAnims("crouch")
+//                //.setTimeInterpolator(0, AnimInterpolators.easeOutBounce)
+//                //.setTranslationInterpolator(0, AnimInterpolators.CatmullRom)
+//                .setLength(0.5f);
+//        manager.createState("stand").forAnims("stand")
+//                //.setTranslationInterpolator(0, AnimInterpolators.CatmullRom)
+//                //  .setTimeInterpolator(0, AnimInterpolators.easeOutBounce)
+//                .setLength(0.5f);
+
+        manager.createState("run_poses").forAnims("run_poses")
+                .setTranslationInterpolator(0, AnimInterpolators.CatmullRom)
+                //.setRotationInterpolator(0, AnimInterpolators.NLerp)
+                .setTimeInterpolator(0, AnimInterpolators.easeOutElastic)
+                .setLength(1.8f);
+
+        manager.createState("idle-crouch").forAnims("Idle-crouch");
 
         //creating a wave anim on the wave layer
         manager.createState("waveLayer").forAnims("wave").onLayer("wave");
@@ -90,6 +107,12 @@ public class AnimAppState extends BaseAppState {
         manager.findState(ANY_STATE).interruptTo("walk_jog").when(() -> currentState.equals("walk_jog"));
         manager.findState(ANY_STATE).interruptTo("walk_jog_nestedRun").when(() -> currentState.equals("walk_jog_nestedRun"));
         manager.findState(ANY_STATE).interruptTo("walk_poses").when(() -> currentState.equals("walk_poses"));
+        manager.findState(ANY_STATE).interruptTo("run_poses").when(() -> currentState.equals("run_poses"));
+        //manager.findState(ANY_STATE).interruptTo("crouch").when(() -> currentState.equals("crouch"));
+        manager.findState(ANY_STATE).interruptTo("idle-crouch").when(() -> currentState.equals("idle-crouch"));
+        //manager.findState("crouch").transitionTo("idle-crouch");
+        //manager.findState(ANY_STATE).interruptTo("stand").when(() -> currentState.equals("stand"));
+//        manager.findState("stand").transitionTo("idle");
 
         //Special case, when the wave state ends, it will return to "anystate", in that case the state from which wave was triggered
         //For example if you go from walk to wave, when wave ends, it will transition back to walk.

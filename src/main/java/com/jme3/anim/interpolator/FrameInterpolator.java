@@ -1,19 +1,14 @@
 package com.jme3.anim.interpolator;
 
-import com.google.common.primitives.Floats;
-import com.jme3.animation.CompactQuaternionArray;
-import com.jme3.animation.CompactVector3Array;
-import com.jme3.math.EaseFunction;
-import com.jme3.math.Quaternion;
-import com.jme3.math.Transform;
-import com.jme3.math.Vector3f;
+import com.jme3.animation.*;
+import com.jme3.math.*;
 
 /**
  * Created by nehon on 15/04/17.
  */
-public class TrackInterpolator {
+public class FrameInterpolator {
 
-    public static final TrackInterpolator DEFAULT = new TrackInterpolator();
+    public static final FrameInterpolator DEFAULT = new FrameInterpolator();
 
     private AnimInterpolator<Float> timeInterpolator;
     private AnimInterpolator<Vector3f> translationInterpolator = AnimInterpolators.LinearVec3f;
@@ -62,4 +57,65 @@ public class TrackInterpolator {
     public void setScaleInterpolator(AnimInterpolator<Vector3f> scaleInterpolator) {
         this.scaleInterpolator = scaleInterpolator;
     }
+
+
+    public static class TrackTimeReader {
+        private float[] data;
+
+        protected void setData(float[] data) {
+            this.data = data;
+        }
+
+        public float getEntry(int index) {
+            return data[mod(index, data.length)];
+        }
+
+        public int getLength() {
+            return data.length;
+        }
+    }
+
+    public static class TrackDataReader<T> {
+
+        private CompactArray<T> data;
+
+        protected void setData(CompactArray<T> data) {
+            this.data = data;
+        }
+
+        public T getEntryMod(int index, T store) {
+            return data.get(mod(index, data.getTotalObjectSize()), store);
+        }
+
+        public T getEntryClamp(int index, T store) {
+            index = (int) FastMath.clamp(index, 0, data.getTotalObjectSize() - 1);
+            return data.get(index, store);
+        }
+
+        public T getEntryModSkip(int index, T store) {
+            int total = data.getTotalObjectSize();
+            if (index == -1) {
+                index--;
+            } else if (index >= total) {
+                index++;
+            }
+
+            index = mod(index, total);
+
+
+            return data.get(index, store);
+        }
+    }
+
+    /**
+     * Euclidean modulo (cycle on 0,n instead of -n,0; 0,n)
+     *
+     * @param val
+     * @param n
+     * @return
+     */
+    private static int mod(int val, int n) {
+        return ((val % n) + n) % n;
+    }
+
 }
