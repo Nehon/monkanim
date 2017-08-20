@@ -49,7 +49,27 @@ public class AnimInterpolators {
             data.getEntryModSkip(currentIndex, q1);
             data.getEntryModSkip(currentIndex + 1, q2);
             data.getEntryModSkip(currentIndex + 2, q3);
-            MathUtils.squad(q0, q1, q2, q3, a, b, t, store);
+            /*
+             * Flip signs as necessary to make dot products of successive
+             * data samples non-negative.
+             */
+            if (q0.dot(q1) < 0f) {
+                q1.negate();
+            }
+            if (q1.dot(q2) < 0f) {
+                q2.negate();
+            }
+            if (q2.dot(q3) < 0f) {
+                q3.negate();
+            }            
+            /*
+             * Calculate the Squad parameter "a"
+             * at either end of the central interval.
+             */
+            MathUtils.spline(q0, q1, q2, a);
+            MathUtils.spline(q1, q2, q3, b);
+
+            MathUtils.squad(q1, q2, a, b, t, store);
             return store;
         }
     };
